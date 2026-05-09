@@ -1,0 +1,15 @@
+{
+  "experiment_id": "exp_001_pilot",
+  "description": "Initial baseline test of political domain forcing and complete framework activation.",
+  "corpus_path": "data/annotations/pilot_corpus_01.json",
+  "validation_corpus_path": "data/annotations/pilot_corpus_01.json",
+  "frameworks": {
+    "pragmatics": true,
+    "semantics": true,
+    "register": true
+  },
+  "governance_overrides": {
+    "force_domain": "Political",
+    "confidence_penalty_multiplier": 0.8
+  }
+}

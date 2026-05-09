@@ -1,0 +1,14 @@
+{
+  "experiment_id": "exp_003_pol_T2",
+  "description": "Subsequent political discourse evaluation for Time 2 (Drift analysis).",
+  "corpus_path": "data/corpora/political_01/corpus_T2.json",
+  "frameworks": {
+    "pragmatics": true,
+    "semantics": true,
+    "register": true
+  },
+  "governance_overrides": {
+    "force_domain": "Political",
+    "confidence_penalty_multiplier": 0.8
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "corpus_name": "institutional_01",
+  "domain": "Institutional",
+  "description": "Benchmark dataset for formal institutional communication, evaluating Register Theory adherence and semantic stability.",
+  "validation_targets": {
+    "expected_frameworks": ["Register", "Semantics"],
+    "required_governance_overrides": ["Register"],
+    "confidence_threshold": 0.90
+  },
+  "temporal_segments": [
+    {
+      "time_id": "T1",
+      "period": "Draft Version",
+      "file": "corpus_draft.json"
+    },
+    {
+      "time_id": "T2",
+      "period": "Final Published Version",
+      "file": "corpus_final.json"
+    }
+  ]
+}

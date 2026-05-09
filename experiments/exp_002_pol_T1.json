@@ -1,0 +1,14 @@
+{
+  "experiment_id": "exp_002_pol_T1",
+  "description": "Baseline political discourse evaluation for Time 1.",
+  "corpus_path": "data/corpora/political_01/corpus_T1.json",
+  "frameworks": {
+    "pragmatics": true,
+    "semantics": true,
+    "register": true
+  },
+  "governance_overrides": {
+    "force_domain": "Political",
+    "confidence_penalty_multiplier": 0.8
+  }
+}

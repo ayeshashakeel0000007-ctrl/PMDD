@@ -1,0 +1,22 @@
+{
+  "corpus_name": "political_01",
+  "domain": "Political",
+  "description": "Benchmark dataset for political discourse drift, tracking shifts in persuasive strategies and speech act frequencies over time.",
+  "validation_targets": {
+    "expected_frameworks": ["Pragmatics", "Semantics"],
+    "required_governance_overrides": ["Pragmatics"],
+    "confidence_threshold": 0.85
+  },
+  "temporal_segments": [
+    {
+      "time_id": "T1",
+      "period": "2020-Q1",
+      "file": "corpus_T1.json"
+    },
+    {
+      "time_id": "T2",
+      "period": "2024-Q1",
+      "file": "corpus_T2.json"
+    }
+  ]
+}

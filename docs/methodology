@@ -1,0 +1,37 @@
+# Deterministic Governance in Adaptive Linguistic Intelligence
+
+## 1. Abstract
+The PMDD (Pragmatic Meaning Drift Detector) platform utilizes a deterministic governance layer to mathematically constrain Large Language Models (LLMs). Rather than allowing LLMs to autonomously dictate their analytical pipelines, the platform forces the LLM to propose a structural plan which is then validated, penalized, or overridden by hardcoded Python rules rooted in linguistic theory.
+
+## 2. System Architecture
+
+The fundamental pipeline enforces a strict hierarchical separation of concerns:
+
+```mermaid
+graph TD
+    A[Raw Corpus Input] --> B[Agent 1: Preprocessor]
+    B --> C[Agent 0: Profiler]
+    C -->|Proposes Execution Plan| D[Framework Governance]
+    
+    subgraph Deterministic Governance Layer
+    D -->|Validates Routing| D1{Domain Override?}
+    D1 -->|Yes: Force Frameworks| D2[Routing Enforced]
+    D1 -->|No| D2
+    D2 -->|Calculate Penalties| D3[Confidence Penalties Applied]
+    end
+    
+    D3 --> E[Math Engine & Aggregation]
+    E --> F[Agent 5: Orchestrator]
+    F --> G[Final Synthesized Output]
+    
+    style D fill:#1e293b,stroke:#64ffda,stroke-width:2px,color:#fff
+```
+
+## 3. Mathematical Penalties
+
+The governance engine applies mathematical penalties to the LLM's raw confidence scores based on structural instability:
+
+1. **Emotional Complexity Penalty**: If the semantic complexity or emotional variance of a segment exceeds 0.8, the Semantic Confidence score is multiplied by 0.85.
+2. **Evidence Quality Slash**: If any agent returns an evidence quality score `< 0.5`, its confidence is slashed heavily (multiplier: 0.70). 
+
+These rules ensure that the **Systemic Uncertainty Index** is highly sensitive to weak LLM reasoning, protecting the overall credibility of the mathematical output.

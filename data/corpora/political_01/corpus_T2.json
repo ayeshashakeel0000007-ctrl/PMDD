@@ -1,0 +1,26 @@
+[
+  {
+    "sentence_id": 1,
+    "text": "The corrupt administration is deliberately trying to bankrupt this nation.",
+    "human_annotations": {
+      "speech_act": "expressive",
+      "formality_score": 0.3
+    }
+  },
+  {
+    "sentence_id": 2,
+    "text": "You must fight back against these tyrannical policies immediately.",
+    "human_annotations": {
+      "speech_act": "directive",
+      "formality_score": 0.4
+    }
+  },
+  {
+    "sentence_id": 3,
+    "text": "If we don't act now, everything we love will be taken from us.",
+    "human_annotations": {
+      "speech_act": "expressive",
+      "formality_score": 0.5
+    }
+  }
+]

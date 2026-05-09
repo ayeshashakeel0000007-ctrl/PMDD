@@ -1,0 +1,29 @@
+[
+  {
+    "sentence_id": 1,
+    "text": "The administration proposes an immediate tax relief package to stimulate economic growth.",
+    "human_annotations": {
+      "annotator_1": {"speech_act": "assertive", "formality_score": 0.8},
+      "annotator_2": {"speech_act": "assertive", "formality_score": 0.9},
+      "annotator_3": {"speech_act": "directive", "formality_score": 0.8}
+    }
+  },
+  {
+    "sentence_id": 2,
+    "text": "We urge all members of Congress to vote yes on this bill before the recess.",
+    "human_annotations": {
+      "annotator_1": {"speech_act": "directive", "formality_score": 0.7},
+      "annotator_2": {"speech_act": "directive", "formality_score": 0.7},
+      "annotator_3": {"speech_act": "directive", "formality_score": 0.6}
+    }
+  },
+  {
+    "sentence_id": 3,
+    "text": "Failure to pass this legislation will absolutely destroy middle-class families.",
+    "human_annotations": {
+      "annotator_1": {"speech_act": "expressive", "formality_score": 0.4},
+      "annotator_2": {"speech_act": "expressive", "formality_score": 0.3},
+      "annotator_3": {"speech_act": "expressive", "formality_score": 0.5}
+    }
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "corpus_id": "political_01",
+  "description": "A synthetic longitudinal corpus of political discourse tracking chronological meaning drift.",
+  "domain": "Political",
+  "temporal_structure": [
+    {
+      "time_id": "T1",
+      "description": "Baseline formal political discourse.",
+      "file": "corpus_T1.json"
+    },
+    {
+      "time_id": "T2",
+      "description": "Emotionally heightened, radicalized discourse following a crisis event.",
+      "file": "corpus_T2.json"
+    }
+  ],
+  "annotation_schema_version": "1.0",
+  "required_frameworks": ["Pragmatics", "Semantics", "Register"],
+  "governance_expectations": {
+    "routing_overrides_expected": true,
+    "confidence_penalties_expected": true
+  },
+  "known_limitations": "Synthetic pilot data. Not to be used for formal historical generalizations without human-annotator validation.",
+  "preprocessing_notes": "Data has been pre-segmented by sentence boundaries."
+}

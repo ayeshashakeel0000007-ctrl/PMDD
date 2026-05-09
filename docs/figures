@@ -1,0 +1,72 @@
+# PMDD System Architecture Figures
+
+*Note for Researchers: These Mermaid diagrams are formatted for direct inclusion in academic publications. They can be natively rendered in GitHub or exported to SVG/PDF via any standard Markdown editor.*
+
+## Figure 1: Full Multi-Agent Pipeline
+
+```mermaid
+graph TD
+    classDef LLM fill:#0f172a,stroke:#64ffda,stroke-width:2px,color:#fff;
+    classDef Deterministic fill:#1e293b,stroke:#f87171,stroke-width:2px,color:#fff;
+    classDef Data fill:#334155,stroke:#94a3b8,stroke-width:1px,color:#fff;
+
+    A[Raw Corpus Input]:::Data --> B[Agent 1: Preprocessor]:::LLM
+    B --> C[Agent 0: Profiler]:::LLM
+    
+    C -->|Proposes Execution Plan| D{Deterministic Governance Layer}:::Deterministic
+    
+    D -->|Enforced Routing| E[Agent 2: Pragmatics]:::LLM
+    D -->|Enforced Routing| F[Agent 3: Semantics]:::LLM
+    D -->|Enforced Routing| G[Agent 4: Register]:::LLM
+    
+    E & F & G --> H[Agent 5: Orchestrator]:::LLM
+    
+    H --> I[Mathematical Engine]:::Deterministic
+    I --> J[Final Export: JSON/CSV/MD]:::Data
+```
+
+## Figure 2: Deterministic Governance Workflow
+
+```mermaid
+graph TD
+    classDef Logic fill:#1e293b,stroke:#64ffda,stroke-width:2px,color:#fff;
+    classDef Decision fill:#0f172a,stroke:#f87171,stroke-width:2px,shape:diamond,color:#fff;
+    classDef Output fill:#334155,stroke:#94a3b8,stroke-width:1px,color:#fff;
+
+    A[Profiler Plan Received]:::Logic --> B{Is Domain Overridden?}:::Decision
+    B -->|Yes| C[Force Framework Activation]:::Logic
+    B -->|No| D[Accept Profiler Frameworks]:::Logic
+    
+    C & D --> E[Agents Execute Analysis]:::Logic
+    E --> F[Raw Confidences Generated]:::Logic
+    
+    F --> G{Is Emotional Complexity > 0.8?}:::Decision
+    G -->|Yes| H[Multiply Confidence by 0.85]:::Logic
+    G -->|No| I[Retain Base Confidence]:::Logic
+    
+    F --> J{Is Evidence Quality < 0.5?}:::Decision
+    J -->|Yes| K[Multiply Confidence by 0.70]:::Logic
+    J -->|No| L[Retain Base Confidence]:::Logic
+    
+    H & I & K & L --> M[Log to Traceability Audit]:::Output
+```
+
+## Figure 3: Systemic Uncertainty Propagation
+
+```mermaid
+graph LR
+    classDef Base fill:#0f172a,stroke:#64ffda,color:#fff;
+    classDef Penalty fill:#1e293b,stroke:#f87171,color:#fff;
+    classDef Final fill:#334155,stroke:#94a3b8,stroke-width:2px,color:#fff;
+
+    A[Pragmatics: 0.90]:::Base --> D[Governance Filter]:::Penalty
+    B[Semantics: 0.82]:::Base --> D
+    C[Register: 0.88]:::Base --> D
+    
+    D -->|Penalty Applied| E[Pragmatics: 0.90]:::Base
+    D -->|Complexity Slash| F[Semantics: 0.69]:::Penalty
+    D -->|Penalty Applied| G[Register: 0.88]:::Base
+    
+    E & F & G --> H[Average: 0.823]:::Final
+    H --> I[Systemic Uncertainty Index: 0.177]:::Final
+```

@@ -1,0 +1,44 @@
+# Deterministic Governance in Large Language Models: A Computational Framework for Adaptive Discourse Analysis
+
+## Abstract
+Recent advancements in Large Language Models (LLMs) have demonstrated significant potential for automated discourse analysis. However, the autonomous nature of LLMs introduces critical vulnerabilities regarding reproducibility, theoretical alignment, and overconfidence, limiting their utility as formal scientific instruments. In this paper, we introduce the Pragmatic Meaning Drift Detector (PMDD), an interpretable, multi-agent computational linguistics framework. PMDD mitigates LLM autonomy through a Deterministic Governance Layer—a set of hardcoded heuristics that constrain LLM routing and mathematically penalize raw confidence scores based on structural instability. We demonstrate that this governance architecture, combined with a Systemic Uncertainty Index, yields highly calibrated outputs suitable for longitudinal semantic drift tracking.
+
+## 1. Introduction
+- **The LLM Reliability Problem**: Black-box LLMs hallucinate linguistic frameworks and express overconfidence in ambiguous texts.
+- **The Need for Deterministic Boundaries**: Why pure prompt-engineering is insufficient for rigorous computational linguistics.
+- **Our Contribution**: We present PMDD, introducing Deterministic Governance, Systemic Uncertainty Calculation, and reproducible longitudinal drift tracking.
+
+## 2. Related Work
+- LLMs in Computational Social Science.
+- Approaches to LLM Calibration and Uncertainty Measurement (ECE).
+- Computational implementations of Speech Act Theory and Systemic Functional Linguistics.
+
+## 3. System Architecture: The PMDD Framework
+- **3.1 Multi-Agent Pipeline**: Separation of concerns (Preprocessor -> Profiler -> Specialist Agents -> Orchestrator).
+- **3.2 Deterministic Governance Layer**: How Python heuristics intercept and override the Profiler's autonomous execution plans.
+- **3.3 Episodic Memory**: The role of non-authoritative, retrieval-based memory for contextual priors.
+
+## 4. Methodology: Uncertainty & Calibration
+- **4.1 The Systemic Uncertainty Index**: Mathematical aggregation of localized agent confidences.
+- **4.2 Confidence Penalty Mechanisms**: Applying scalar penalties (e.g., 0.85 multiplier) based on emotional complexity or weak evidence retrieval.
+- **4.3 Expected Calibration Error (ECE)**: How PMDD measures calibration to prevent the "overconfident agent" problem.
+
+## 5. Experimental Setup
+- **5.1 Dataset**: Describe the `political_01` longitudinal corpus.
+- **5.2 Human-vs-Agent Benchmarking**: Methodology for calculating Krippendorff's Alpha across human annotators, and F1 comparisons against the PMDD pipeline.
+- **5.3 Batch Execution**: Synchronous offline processing to guarantee deterministic reproducibility.
+
+## 6. Results
+- **6.1 Benchmark Accuracy**: Precision, Recall, and F1 against Human Gold Standards.
+- **6.2 Calibration Findings**: ECE scores and Reliability Diagrams (does PMDD know when it is wrong?).
+- **6.3 Longitudinal Semantic Drift**: KL Divergence and Temporal Variance tracking across the T1 -> T2 political corpus.
+
+## 7. Discussion
+- The efficacy of deterministic governance in enforcing theoretical alignment.
+- The trade-offs between strict python rules and emergent LLM reasoning.
+
+## 8. Conclusion
+- PMDD establishes a new paradigm for using LLMs as structured, scientifically defensible instruments rather than black-box oracles.
+
+## References
+[To be populated]

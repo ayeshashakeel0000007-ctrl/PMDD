@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PMDD Experiment Configuration",
+  "type": "object",
+  "properties": {
+    "experiment_id": { "type": "string" },
+    "description": { "type": "string" },
+    "corpus_path": { "type": "string", "description": "Path to the JSON/text corpus to analyze." },
+    "validation_corpus_path": { "type": "string", "description": "Optional path to human gold-standard annotations." },
+    "frameworks": {
+      "type": "object",
+      "properties": {
+        "pragmatics": { "type": "boolean" },
+        "semantics": { "type": "boolean" },
+        "register": { "type": "boolean" }
+      },
+      "required": ["pragmatics", "semantics", "register"]
+    },
+    "governance_overrides": {
+      "type": "object",
+      "properties": {
+        "force_domain": { "type": "string" },
+        "confidence_penalty_multiplier": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
+  },
+  "required": ["experiment_id", "corpus_path", "frameworks"]
+}

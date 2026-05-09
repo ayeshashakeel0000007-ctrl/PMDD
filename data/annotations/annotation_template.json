@@ -1,0 +1,25 @@
+{
+  "corpus_metadata": {
+    "corpus_id": "example_corpus_001",
+    "annotator_id": "human_01",
+    "date_annotated": "2026-XX-XX"
+  },
+  "sentence_annotations": [
+    {
+      "sentence_id": 1,
+      "text": "The implementation of the new policy will begin immediately.",
+      "speech_act": "Assertive",
+      "formality_score": 0.8,
+      "confidence": 1.0,
+      "notes": "Clear statement of fact."
+    },
+    {
+      "sentence_id": 2,
+      "text": "Please ensure you have submitted all documentation by Friday.",
+      "speech_act": "Directive",
+      "formality_score": 0.6,
+      "confidence": 0.9,
+      "notes": "Direct request but polite."
+    }
+  ]
+}

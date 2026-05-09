@@ -1,0 +1,56 @@
+# PMDD Reproducibility & Setup Guide
+
+This guide is intended for academic peer-reviewers and computational linguistics researchers wishing to independently execute, verify, or expand upon the PMDD empirical benchmarks.
+
+## 1. Prerequisites
+- Python 3.9+
+- Node.js 18+
+- An active OpenAI API Key (required for LLM agent routing and linguistic inference).
+
+## 2. Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/[your-repo]/pmdd-research.git
+   cd pmdd-research
+   ```
+2. Install Python backend dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Install React frontend dependencies:
+   ```bash
+   cd frontend
+   npm install
+   cd ..
+   ```
+
+## 3. Environment Configuration
+Create a `.env` file in the root directory:
+```env
+OPENAI_API_KEY=your_api_key_here
+```
+
+## 4. Reproducing Benchmark Experiments
+To ensure absolute deterministic reproducibility, we recommend running experiments offline using the synchronous batch runner. This prevents API rate limits and parallelization races.
+
+1. Ensure your `.json` experiment configurations are placed in the `experiments/` directory.
+2. Ensure your target corpora are placed in `data/corpora/`.
+3. Execute the batch runner:
+   ```bash
+   python experiments/batch_runner.py
+   ```
+4. A complete `batch_results_summary.csv` will be generated in the `experiments/` directory.
+
+## 5. Generating Academic Plots
+Once the batch experiments have concluded, you can generate the Reliability Diagrams and Expected Calibration Error (ECE) histograms.
+```bash
+python docs/research/generate_plots.py
+```
+*Note: You must have `matplotlib` installed. Plots will be saved as high-resolution PNGs in the `docs/research/` directory.*
+
+## 6. Accessing the Traceability UI
+If you prefer to inspect a specific text segment visually:
+1. Start the backend: `uvicorn api.server:app --reload`
+2. Start the frontend: `npm run dev` (from the `frontend/` directory).
+3. Navigate to `http://localhost:5173`.
+4. Enter your text and select the "Academic Analysis" tab to view the Governance Traceability Audit.

@@ -1,0 +1,257 @@
+{
+  "segments": [
+    {
+      "id": 0,
+      "text": "It is absolutely unacceptable that the committee has decided to ignore our proposal.",
+      "word_count": 13,
+      "position": 0.0,
+      "pragmatics": {
+        "reasoning_chain": "The text expresses a strong negative opinion about the committee's decision, which aligns with an Expressive speech act. The speaker is conveying dissatisfaction or disapproval. There is no directive, as the speaker is not asking for any action. There is no commissive, as the speaker is not committing to any future action. There is no assertive, as the speaker is not stating a fact or belief about the world. There is no declaration, as the speaker is not changing the external status of affairs. Regarding Gricean maxims, the statement is clear and relevant, with no apparent violations of Quantity, Quality, Relation, or Manner.",
+        "confidence": 0.95,
+        "evidence_quality": 0.9,
+        "speech_acts": [
+          {
+            "category": "Expressive",
+            "confidence": 0.95,
+            "evidence": "It is absolutely unacceptable that the committee has decided to ignore our proposal."
+          }
+        ],
+        "maxim_violations": []
+      },
+      "semantics": {
+        "reasoning_chain": "1. 'unacceptable' is an adjective describing the decision, indicating a strong negative judgment, which relates to 'EMOTION'.\n2. 'committee' is a noun referring to a group of people making decisions, which relates to 'SOCIETY'.\n3. 'decided' is a verb indicating the action of making a choice, which relates to 'POLITICS'.\n4. 'ignore' is a verb indicating the action of not considering something, which relates to 'POLITICS'.\n5. 'proposal' is a noun referring to a suggested plan, which relates to 'POLITICS'.",
+        "confidence": 0.95,
+        "evidence_quality": 0.9,
+        "semantic_fields": [
+          {
+            "word": "unacceptable",
+            "field": "EMOTION",
+            "contextual_meaning": "Strong negative judgment about the decision."
+          },
+          {
+            "word": "committee",
+            "field": "SOCIETY",
+            "contextual_meaning": "A group of people making decisions."
+          },
+          {
+            "word": "decided",
+            "field": "POLITICS",
+            "contextual_meaning": "The action of making a choice."
+          },
+          {
+            "word": "ignore",
+            "field": "POLITICS",
+            "contextual_meaning": "The action of not considering something."
+          },
+          {
+            "word": "proposal",
+            "field": "POLITICS",
+            "contextual_meaning": "A suggested plan or idea."
+          }
+        ]
+      },
+      "register": {
+        "reasoning_chain": "The text uses strong evaluative language ('absolutely unacceptable'), indicating a formal tone. The use of 'the committee' suggests a formal context, likely involving organizational or institutional communication. The sentence structure is complete and lacks contractions, which is typical of written communication intended for reading rather than casual conversation. The speaker seems to be addressing an audience with some authority or responsibility, suggesting a relationship of 'Expert to Novice' or 'Authority to Subordinate'.",
+        "confidence": 0.9,
+        "evidence_quality": 0.9,
+        "formality_score": 0.8,
+        "tenor": "Authority to Subordinate",
+        "mode": "Written to be read",
+        "evidence": "The phrase 'absolutely unacceptable' indicates a formal tone. The reference to 'the committee' suggests an organizational context. The lack of contractions and complete sentence structure are typical of written communication."
+      }
+    },
+    {
+      "id": 1,
+      "text": "We must demand an immediate review of the budget allocation before the end of the fiscal year!",
+      "word_count": 17,
+      "position": 0.25,
+      "pragmatics": {
+        "reasoning_chain": "The text contains a strong call to action, suggesting a demand for a specific action to be taken. This aligns with the Directive category in Speech Act Theory, as it is attempting to get someone to do something. There are no apparent violations of Gricean Maxims, as the statement is clear, relevant, and provides sufficient information for the context.",
+        "confidence": 0.9,
+        "evidence_quality": 0.9,
+        "speech_acts": [
+          {
+            "category": "Directive",
+            "confidence": 0.95,
+            "evidence": "We must demand an immediate review of the budget allocation before the end of the fiscal year!"
+          }
+        ],
+        "maxim_violations": []
+      },
+      "semantics": {
+        "reasoning_chain": "The sentence is about a demand for a review of budget allocation. 'Demand' is an action related to 'POWER' as it involves exerting influence or authority. 'Review' is a process of examination, fitting into 'CLINICAL' as it involves analysis. 'Budget' and 'allocation' are financial terms, so they belong to 'ECONOMY'. 'Fiscal year' is a term related to financial periods, also fitting into 'ECONOMY'.",
+        "confidence": 0.95,
+        "evidence_quality": 0.9,
+        "semantic_fields": [
+          {
+            "word": "demand",
+            "field": "POWER",
+            "contextual_meaning": "Exerting influence or authority to request action."
+          },
+          {
+            "word": "review",
+            "field": "CLINICAL",
+            "contextual_meaning": "Process of examination or analysis."
+          },
+          {
+            "word": "budget",
+            "field": "ECONOMY",
+            "contextual_meaning": "Financial plan for allocation of resources."
+          },
+          {
+            "word": "allocation",
+            "field": "ECONOMY",
+            "contextual_meaning": "Distribution of financial resources."
+          },
+          {
+            "word": "fiscal year",
+            "field": "ECONOMY",
+            "contextual_meaning": "Financial period for accounting purposes."
+          }
+        ]
+      },
+      "register": {
+        "reasoning_chain": "The text uses imperative language ('We must demand'), which suggests a call to action, often seen in formal contexts where authority or urgency is being communicated. The phrase 'immediate review of the budget allocation' involves technical terms related to finance and governance, indicating a formal context. The use of 'before the end of the fiscal year' is precise and typical of formal documentation or communication in business or government settings. The tenor appears to be someone in a position of authority or responsibility addressing peers or subordinates, possibly in a professional or organizational context. The mode is likely 'Written to be read' as the structure and vocabulary are more aligned with written communication rather than spontaneous spoken dialogue.",
+        "confidence": 0.9,
+        "evidence_quality": 0.9,
+        "formality_score": 0.8,
+        "tenor": "Authority to Subordinates/Peers",
+        "mode": "Written to be read",
+        "evidence": "Use of imperative ('We must demand'), technical terms ('budget allocation', 'fiscal year'), and formal structure."
+      }
+    },
+    {
+      "id": 2,
+      "text": "However, I understand that the financial constraints are quite severe at this moment.",
+      "word_count": 13,
+      "position": 0.5,
+      "pragmatics": {
+        "reasoning_chain": "The text contains an expression of understanding regarding a situation, which aligns with the Expressive category of speech acts. The speaker is acknowledging the severity of financial constraints, which is a subjective expression of empathy or understanding. There are no directives, commissives, or declarations present. The statement is clear and relevant, with no apparent violations of Gricean maxims.",
+        "confidence": 0.9,
+        "evidence_quality": 0.9,
+        "speech_acts": [
+          {
+            "category": "Expressive",
+            "confidence": 0.9,
+            "evidence": "I understand that the financial constraints are quite severe at this moment."
+          }
+        ],
+        "maxim_violations": []
+      },
+      "semantics": {
+        "reasoning_chain": "1. Identify key content words: 'financial', 'constraints', 'severe', 'moment'.\n2. Determine semantic fields:\n   - 'financial' relates to 'ECONOMY' as it pertains to monetary aspects.\n   - 'constraints' refers to limitations or restrictions, fitting into 'ECONOMY' due to its context with 'financial'.\n   - 'severe' describes the intensity of the constraints, fitting into 'ECONOMY' as it modifies 'constraints'.\n   - 'moment' refers to a point in time, fitting into 'TIME'.",
+        "confidence": 0.95,
+        "evidence_quality": 0.9,
+        "semantic_fields": [
+          {
+            "word": "financial",
+            "field": "ECONOMY",
+            "contextual_meaning": "Relating to monetary aspects or economics."
+          },
+          {
+            "word": "constraints",
+            "field": "ECONOMY",
+            "contextual_meaning": "Limitations or restrictions, especially in a financial context."
+          },
+          {
+            "word": "severe",
+            "field": "ECONOMY",
+            "contextual_meaning": "Describing the intensity or seriousness of the financial constraints."
+          },
+          {
+            "word": "moment",
+            "field": "TIME",
+            "contextual_meaning": "A specific point in time."
+          }
+        ]
+      },
+      "register": {
+        "reasoning_chain": "The text uses formal language, indicated by the use of 'However' and 'I understand that', which are typical of more formal discourse. The phrase 'financial constraints are quite severe' suggests a formal context, likely involving professional or business communication. The tenor appears to be 'Expert to Novice' or 'Professional to Client', as the speaker acknowledges understanding of a situation, possibly explaining or justifying a decision. The mode is 'Written to be read', as the structure and vocabulary are more aligned with written communication rather than spontaneous spoken dialogue.",
+        "confidence": 0.95,
+        "evidence_quality": 0.9,
+        "formality_score": 0.8,
+        "tenor": "Professional to Client",
+        "mode": "Written to be read",
+        "evidence": "Use of 'However', 'I understand that', and 'financial constraints are quite severe' suggests formal, written communication."
+      }
+    },
+    {
+      "id": 3,
+      "text": "Therefore, I humbly request that we schedule a brief meeting to discuss alternative solutions.",
+      "word_count": 14,
+      "position": 0.75,
+      "pragmatics": {
+        "reasoning_chain": "The text contains a request, which is a type of directive speech act. The speaker is asking for a meeting to discuss solutions, indicating a desire for action from the listener. There are no apparent violations of Gricean maxims as the request is clear, relevant, and provides sufficient information without unnecessary detail.",
+        "confidence": 0.95,
+        "evidence_quality": 0.9,
+        "speech_acts": [
+          {
+            "category": "Directive",
+            "confidence": 0.95,
+            "evidence": "I humbly request that we schedule a brief meeting to discuss alternative solutions."
+          }
+        ],
+        "maxim_violations": []
+      },
+      "semantics": {
+        "reasoning_chain": "1. 'request' is a verb indicating an action of asking, which relates to 'COMMUNICATION'.\n2. 'schedule' is a verb indicating the action of planning, which relates to 'TIME'.\n3. 'meeting' is a noun referring to a gathering, which relates to 'SOCIETY'.\n4. 'discuss' is a verb indicating the action of talking about something, which relates to 'COMMUNICATION'.\n5. 'solutions' is a noun referring to answers or ways to solve problems, which relates to 'PROBLEM-SOLVING'.",
+        "confidence": 0.95,
+        "evidence_quality": 0.9,
+        "semantic_fields": [
+          {
+            "word": "request",
+            "field": "COMMUNICATION",
+            "contextual_meaning": "The act of asking for something."
+          },
+          {
+            "word": "schedule",
+            "field": "TIME",
+            "contextual_meaning": "The act of planning a time for an event."
+          },
+          {
+            "word": "meeting",
+            "field": "SOCIETY",
+            "contextual_meaning": "A gathering of people for discussion."
+          },
+          {
+            "word": "discuss",
+            "field": "COMMUNICATION",
+            "contextual_meaning": "The act of talking about something."
+          },
+          {
+            "word": "solutions",
+            "field": "PROBLEM-SOLVING",
+            "contextual_meaning": "Answers or ways to solve problems."
+          }
+        ]
+      },
+      "register": {
+        "reasoning_chain": "The text uses formal language, indicated by the use of 'Therefore' and 'humbly request', which are typical in formal or polite requests. The structure of the sentence is also complex, suggesting a higher formality. The tenor appears to be 'Professional to Professional' or 'Subordinate to Superior', as the speaker is making a request in a deferential manner, implying a power dynamic. The mode is 'Written to be read', as the sentence is structured in a way that is typical of written communication, particularly in professional or formal contexts.",
+        "confidence": 0.95,
+        "evidence_quality": 0.9,
+        "formality_score": 0.85,
+        "tenor": "Subordinate to Superior",
+        "mode": "Written to be read",
+        "evidence": "The use of 'Therefore', 'humbly request', and the complex sentence structure indicate a formal register. The phrase 'schedule a brief meeting to discuss alternative solutions' suggests a professional context."
+      }
+    }
+  ],
+  "final_output": {
+    "math_scores": {
+      "pragmatic_entropy": 1.0,
+      "speech_act_distribution": {
+        "Assertive": 0,
+        "Directive": 2,
+        "Commissive": 0,
+        "Expressive": 2,
+        "Declaration": 0
+      },
+      "confidence_weighted_formality": 0.8128378378378379
+    },
+    "report": {
+      "simple_explanation": "The analysis shows that the communication is quite straightforward and clear, with a balance between giving instructions and expressing emotions. The language used is moderately formal, suggesting a professional tone without being overly stiff.",
+      "technical_analysis": "The linguistic analysis reveals a pragmatic entropy of 1.000, indicating a high level of predictability in the communication. This suggests that the language used is straightforward and lacks complexity or ambiguity. The speech act distribution shows a predominance of directive and expressive acts, with two instances each, and no assertive, commissive, or declarative acts. This indicates a focus on instructing or requesting actions and expressing emotions or attitudes, rather than making statements of fact, promises, or formal declarations. The confidence-weighted formality score of 0.813 suggests a moderately formal tone, which aligns with professional communication standards while maintaining some degree of informality to facilitate engagement and relatability.",
+      "conclusion": "The communication is clear and predictable, with a focus on directives and expressions, and maintains a moderately formal tone suitable for professional contexts."
+    }
+  }
+}
