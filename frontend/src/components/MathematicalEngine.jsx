@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { FileText, Beaker, ShieldCheck } from 'lucide-react';
+import { FileText, Beaker, ShieldCheck, Zap, AlertTriangle, Eye, ActivitySquare } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const MathematicalEngine = ({ results }) => {
+const MathematicalEngine = React.memo(({ results }) => {
   const [reportView, setReportView] = useState('simple'); // 'simple' or 'technical'
 
   if (!results || !results.final_output || !results.final_output.math_scores) {
@@ -13,19 +14,23 @@ const MathematicalEngine = ({ results }) => {
   const report = results.final_output.report;
   
   // Transform data for charts
-  const speechActs = Object.keys(scores.speech_act_distribution).map(key => ({
-    subject: key,
-    A: scores.speech_act_distribution[key],
-    fullMark: 10,
-  }));
+  const speechActs = useMemo(() => {
+    return Object.keys(scores.speech_act_distribution).map(key => ({
+      subject: key,
+      A: scores.speech_act_distribution[key],
+      fullMark: 10,
+    }));
+  }, [scores.speech_act_distribution]);
 
-  const entropyData = [
-    { name: 'Pragmatic Entropy', value: scores.pragmatic_entropy },
-    { name: 'Formality Index', value: scores.confidence_weighted_formality || 0 }
-  ];
+  const entropyData = useMemo(() => {
+    return [
+      { name: 'Pragmatic Entropy', value: scores.pragmatic_entropy },
+      { name: 'Formality Index', value: scores.confidence_weighted_formality || 0 }
+    ];
+  }, [scores.pragmatic_entropy, scores.confidence_weighted_formality]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-pmdd-accent/30">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-pmdd-accent/30">
       <div className="mb-12">
         <h2 className="text-3xl font-bold text-white mb-2">Deterministic Mathematical Outputs</h2>
         <p className="text-pmdd-neutral">
@@ -166,21 +171,73 @@ const MathematicalEngine = ({ results }) => {
 
           <div className="prose prose-invert max-w-none relative z-10">
             {reportView === 'simple' ? (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <p className="text-lg leading-relaxed text-pmdd-bg mb-6 border-l-4 border-pmdd-soft pl-4">
-                  {report.simple_explanation}
-                </p>
-                <h4 className="text-pmdd-soft font-semibold mb-2">Conclusion</h4>
-                <p className="text-pmdd-neutral">{report.conclusion}</p>
-              </div>
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-6"
+              >
+                {/* In Case You're Not a Linguist Panel */}
+                <div className="bg-gradient-to-br from-indigo-900/40 to-slate-900/80 border border-indigo-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(99,102,241,0.15)] relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+                  <div className="absolute -right-20 -top-20 w-64 h-64 bg-indigo-500/20 rounded-full blur-[80px] group-hover:bg-indigo-400/30 transition-colors duration-700 pointer-events-none"></div>
+                  
+                  <h4 className="text-2xl font-bold text-white flex items-center mb-6">
+                    <Eye className="mr-3 text-indigo-400" size={28} /> In Case You're Not a Linguist
+                  </h4>
+                  
+                  <div className="text-lg leading-relaxed text-indigo-100 mb-8 border-l-4 border-indigo-400 pl-5 font-medium">
+                    "{report.simple_explanation}"
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    {/* Live Interpretable Summary blocks */}
+                    <div className="bg-black/40 p-5 rounded-xl border border-white/5 backdrop-blur-md hover:border-white/10 transition-colors">
+                      <h5 className="text-pmdd-accent font-semibold flex items-center mb-3">
+                        <ActivitySquare size={18} className="mr-2" /> Linguistic Stability Assessment
+                      </h5>
+                      <p className="text-sm text-pmdd-neutral leading-relaxed">
+                        {(scores.systemic_uncertainty_index || 0) < 0.1 
+                          ? "The text exhibits highly stable, predictable semantic patterns. Interpretive confidence is optimal." 
+                          : (scores.systemic_uncertainty_index || 0) < 0.25 
+                          ? "The text shows moderate stability, with some rhetorical variation. Interpretive confidence remains high." 
+                          : "The text is highly volatile, indicating chaotic or unpredictable meaning structures. Expect significant pragmatic shifts."}
+                      </p>
+                    </div>
+
+                    <div className="bg-black/40 p-5 rounded-xl border border-white/5 backdrop-blur-md hover:border-white/10 transition-colors">
+                      <h5 className={`${(scores.pragmatic_entropy || 0) > 0.8 ? 'text-rose-400' : 'text-emerald-400'} font-semibold flex items-center mb-3`}>
+                        <AlertTriangle size={18} className="mr-2" /> Communication Risk Interpretation
+                      </h5>
+                      <p className="text-sm text-pmdd-neutral leading-relaxed">
+                        {(scores.pragmatic_entropy || 0) > 0.8 
+                          ? "Elevated entropy detected. The author is using complex, potentially evasive or highly persuasive language."
+                          : "Low entropy detected. The communication is straightforward, direct, and structurally unambiguous."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="glass-panel p-6 border-l-4 border-l-pmdd-soft">
+                  <h4 className="text-pmdd-soft font-semibold mb-2">Executive Conclusion</h4>
+                  <p className="text-pmdd-neutral">{report.conclusion}</p>
+                </div>
+              </motion.div>
             ) : (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 font-mono text-sm space-y-6">
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="font-mono text-sm space-y-6"
+              >
                 {results.final_output.traceability_log && results.final_output.traceability_log.length > 0 && (
-                  <div className="bg-[#12161b] p-6 rounded-lg border border-pmdd-accent/40 shadow-[0_0_15px_rgba(100,255,218,0.1)]">
-                    <h3 className="text-lg font-bold text-white mb-4">Governance Traceability Audit</h3>
+                  <div className="bg-[#12161b] p-6 rounded-lg border border-pmdd-accent/40 shadow-[0_0_15px_rgba(100,255,218,0.1)] hover:shadow-[0_0_25px_rgba(100,255,218,0.2)] transition-shadow duration-500">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                      <Zap size={20} className="text-pmdd-accent mr-2" /> Governance Traceability Audit
+                    </h3>
                     <div className="space-y-3">
                       {results.final_output.traceability_log.map((log, idx) => (
-                        <div key={idx} className="bg-pmdd-dark p-3 rounded border border-pmdd-accent/10 flex justify-between items-start">
+                        <div key={idx} className="bg-pmdd-dark p-3 rounded border border-pmdd-accent/10 flex justify-between items-start group hover:border-pmdd-accent/30 transition-colors">
                           <div>
                             <span className="text-pmdd-accent font-mono text-xs mr-2">[{log.event}]</span>
                             <span className="text-white text-sm">{log.target}</span>
@@ -189,7 +246,7 @@ const MathematicalEngine = ({ results }) => {
                           {log.old_value !== undefined && log.new_value !== undefined && (
                             <div className="text-right font-mono text-xs text-pmdd-soft whitespace-nowrap ml-4 flex flex-col">
                               <span className="line-through opacity-50">{log.old_value.toFixed(2)}</span>
-                              <span className="text-red-400">→ {log.new_value.toFixed(2)}</span>
+                              <span className="text-red-400 font-bold">→ {log.new_value.toFixed(2)}</span>
                             </div>
                           )}
                         </div>
@@ -198,14 +255,15 @@ const MathematicalEngine = ({ results }) => {
                   </div>
                 )}
                 
-                <p className="leading-relaxed text-pmdd-bg bg-[#12161b] p-6 rounded-lg border border-pmdd-accent/20">
-                  {report.technical_analysis}
-                </p>
+                <div className="leading-relaxed text-pmdd-bg bg-[#12161b] p-6 rounded-lg border border-pmdd-accent/20">
+                  <h4 className="text-white font-bold mb-3 uppercase tracking-widest text-xs border-b border-white/10 pb-2">Technical Analysis</h4>
+                  <p>{report.technical_analysis}</p>
+                </div>
                 <div>
                   <h4 className="text-pmdd-accent font-semibold mb-2 flex items-center"><ShieldCheck size={16} className="mr-2"/> Rigorous Conclusion</h4>
                   <p className="text-pmdd-neutral bg-[#12161b] p-4 rounded-lg border border-pmdd-accent/10">{report.conclusion}</p>
                 </div>
-              </div>
+              </motion.div>
             )}
           </div>
         </div>
@@ -213,6 +271,6 @@ const MathematicalEngine = ({ results }) => {
       </div>
     </div>
   );
-};
+});
 
 export default MathematicalEngine;

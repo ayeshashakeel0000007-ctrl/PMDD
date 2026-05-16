@@ -12,7 +12,10 @@ from core.math_engine import calculate_cosine_distance
 # deterministic rules enforced by core.governance.py.
 # =====================================================================
 
-MEMORY_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "memory", "episodic_memory.json")
+if os.environ.get("VERCEL"):
+    MEMORY_FILE = "/tmp/episodic_memory.json"
+else:
+    MEMORY_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "memory", "episodic_memory.json")
 
 def _load_memory() -> List[Dict[str, Any]]:
     if not os.path.exists(MEMORY_FILE):
@@ -25,10 +28,10 @@ def _save_memory(memory: List[Dict[str, Any]]):
     with open(MEMORY_FILE, "w") as f:
         json.dump(memory, f, indent=2)
 
-def get_embedding(text: str) -> List[float]:
-    """Generates an OpenAI embedding for the text."""
+async def get_embedding(text: str) -> List[float]:
+    """Generates an OpenAI embedding for the text asynchronously."""
     try:
-        response = client.embeddings.create(
+        response = await client.embeddings.create(
             input=text,
             model="text-embedding-3-small"
         )
@@ -37,13 +40,13 @@ def get_embedding(text: str) -> List[float]:
         print(f"Embedding error: {e}")
         return []
 
-def retrieve_similar(text: str, top_k: int = 2, min_validation_score: float = 0.7) -> List[Dict[str, Any]]:
+async def retrieve_similar(text: str, top_k: int = 2, min_validation_score: float = 0.7) -> List[Dict[str, Any]]:
     """Retrieves top-k similar previous analyses, auditing for quality."""
     memory = _load_memory()
     if not memory:
         return []
         
-    query_embedding = get_embedding(text)
+    query_embedding = await get_embedding(text)
     if not query_embedding:
         return []
 
@@ -68,10 +71,10 @@ def retrieve_similar(text: str, top_k: int = 2, min_validation_score: float = 0.
         
     return results
 
-def save_analysis(corpus_id: str, domain: str, frameworks: List[str], report: Dict[str, Any], text_sample: str):
+async def save_analysis(corpus_id: str, domain: str, frameworks: List[str], report: Dict[str, Any], text_sample: str):
     """Saves a successfully completed analysis into episodic memory."""
     memory = _load_memory()
-    embedding = get_embedding(text_sample)
+    embedding = await get_embedding(text_sample)
     
     # Assume 1.0 validation score initially, could be downgraded later by humans
     record = {

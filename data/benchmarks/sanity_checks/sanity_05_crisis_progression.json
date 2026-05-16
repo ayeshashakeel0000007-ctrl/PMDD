@@ -1,0 +1,19 @@
+{
+  "corpus_id": "SANITY-05-CRISIS-PROGRESSION",
+  "expected_behavior": {
+    "semantic_stability": "low",
+    "escalation": "severe",
+    "drift": "extreme",
+    "transitivity_shift": "relational_to_material_action"
+  },
+  "time_1": [
+    { "id": "t1_01", "text": "The border situation is currently stable." },
+    { "id": "t1_02", "text": "Diplomats are discussing a resolution." },
+    { "id": "t1_03", "text": "There are minor concerns about resource allocation." }
+  ],
+  "time_2": [
+    { "id": "t2_01", "text": "Enemy forces have breached the perimeter!" },
+    { "id": "t2_02", "text": "Deploy the reserves immediately." },
+    { "id": "t2_03", "text": "We will destroy their command structure." }
+  ]
+}

@@ -1,17 +1,17 @@
 import os
-from openai import OpenAI
+from openai import AsyncOpenAI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def get_structured_completion(prompt: str, system_prompt: str, response_model: BaseModel, model: str = "gpt-4o"):
+async def get_structured_completion(prompt: str, system_prompt: str, response_model: BaseModel, model: str = "gpt-4o-mini"):
     """
-    Calls OpenAI API with strict structured output enforcement via Pydantic schema.
+    Calls OpenAI API asynchronously with strict structured output enforcement via Pydantic schema.
     """
-    response = client.beta.chat.completions.parse(
+    response = await client.beta.chat.completions.parse(
         model=model,
         messages=[
             {"role": "system", "content": system_prompt},

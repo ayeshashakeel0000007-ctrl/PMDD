@@ -1,19 +1,17 @@
-import spacy
 import re
-from typing import List, Dict, Any
+from typing import Dict, Any
+from core.nlp_engine import get_nlp
 
-try:
-    nlp = spacy.load('en_core_web_sm')
-except OSError:
-    import spacy.cli
-    spacy.cli.download('en_core_web_sm')
-    nlp = spacy.load('en_core_web_sm')
+def get_doc(text):
+    nlp = get_nlp()
+    return nlp(text)
 
 def process_corpus(text: str) -> Dict[str, Any]:
     """
     Cleans, tokenizes, and segments the raw corpus into sentences.
     Returns structured data for downstream agents.
     """
+    nlp = get_nlp()
     # Clean text
     text = re.sub(r'\s+', ' ', text).strip()
     doc = nlp(text)

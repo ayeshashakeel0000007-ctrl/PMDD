@@ -1,0 +1,19 @@
+{
+  "corpus_id": "SANITY-04-NEUTRAL-VS-EMOTIONAL",
+  "expected_behavior": {
+    "semantic_stability": "low",
+    "aggression": "high",
+    "drift": "high",
+    "transitivity_shift": "mental_emotional_spike"
+  },
+  "time_1": [
+    { "id": "t1_01", "text": "The transaction was completed successfully." },
+    { "id": "t1_02", "text": "There is a minor discrepancy in the ledger." },
+    { "id": "t1_03", "text": "Please review the attached documents." }
+  ],
+  "time_2": [
+    { "id": "t2_01", "text": "This absolute disaster is ruining our lives!" },
+    { "id": "t2_02", "text": "I am furious about these constant failures." },
+    { "id": "t2_03", "text": "We cannot tolerate this gross incompetence anymore!" }
+  ]
+}

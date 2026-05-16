@@ -12,9 +12,7 @@ class GriceanMaximViolation(BaseModel):
     evidence: str = Field(..., description="Exact substring proving the violation.")
 
 class PragmaticAnalysis(BaseModel):
-    reasoning_chain: str = Field(..., description="Step-by-step internal reasoning chain.")
     confidence: float = Field(..., description="Overall confidence in pragmatic analysis (0.0 to 1.0).")
-    evidence_quality: float = Field(..., description="Quality of extracted evidence (0.0 to 1.0).")
     speech_acts: List[SpeechAct] = Field(..., description="List of speech acts identified in the chunk.")
     maxim_violations: List[GriceanMaximViolation] = Field(..., description="Any Gricean maxim violations.")
 
@@ -24,15 +22,11 @@ class SemanticField(BaseModel):
     contextual_meaning: str = Field(..., description="The contextual meaning in this specific sentence.")
 
 class SemanticAnalysis(BaseModel):
-    reasoning_chain: str = Field(..., description="Step-by-step reasoning for semantic field assignments.")
     confidence: float = Field(..., description="Overall confidence in semantic mapping (0.0 to 1.0).")
-    evidence_quality: float = Field(..., description="Quality of extracted evidence (0.0 to 1.0).")
     semantic_fields: List[SemanticField] = Field(..., description="Semantic mapping for key content words in the chunk.")
 
 class RegisterAnalysis(BaseModel):
-    reasoning_chain: str = Field(..., description="Internal reasoning for Register evaluation.")
     confidence: float = Field(..., description="Overall confidence in register analysis (0.0 to 1.0).")
-    evidence_quality: float = Field(..., description="Quality of extracted evidence (0.0 to 1.0).")
     formality_score: float = Field(..., description="Formality score from 0.0 (highly informal) to 1.0 (highly formal).")
     tenor: str = Field(..., description="Relationship between speaker and audience.")
     mode: str = Field(..., description="Channel characteristics.")
@@ -46,3 +40,26 @@ class ProfilerExecutionPlan(BaseModel):
     run_semantics: bool = Field(..., description="Should Semantics agent run?")
     run_register: bool = Field(..., description="Should Register agent run?")
     routing_rationale: str = Field(..., description="Explanation of why these frameworks were activated.")
+
+# BATCH SCHEMAS FOR CONCURRENCY
+
+class SegmentPragmaticAnalysis(BaseModel):
+    segment_id: int
+    analysis: PragmaticAnalysis
+
+class BatchPragmaticAnalysis(BaseModel):
+    results: List[SegmentPragmaticAnalysis]
+
+class SegmentSemanticAnalysis(BaseModel):
+    segment_id: int
+    analysis: SemanticAnalysis
+
+class BatchSemanticAnalysis(BaseModel):
+    results: List[SegmentSemanticAnalysis]
+
+class SegmentRegisterAnalysis(BaseModel):
+    segment_id: int
+    analysis: RegisterAnalysis
+
+class BatchRegisterAnalysis(BaseModel):
+    results: List[SegmentRegisterAnalysis]

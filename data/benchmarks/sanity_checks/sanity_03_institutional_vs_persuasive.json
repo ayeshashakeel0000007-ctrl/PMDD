@@ -1,0 +1,19 @@
+{
+  "corpus_id": "SANITY-03-INST-VS-PERSUASIVE",
+  "expected_behavior": {
+    "semantic_stability": "moderate",
+    "persuasion": "high",
+    "drift": "moderate",
+    "transitivity_shift": "relational_to_verbal"
+  },
+  "time_1": [
+    { "id": "t1_01", "text": "The department is responsible for public health." },
+    { "id": "t1_02", "text": "Guidelines are available on the website." },
+    { "id": "t1_03", "text": "The mandate begins on Friday." }
+  ],
+  "time_2": [
+    { "id": "t2_01", "text": "We strongly urge all citizens to take precautions." },
+    { "id": "t2_02", "text": "You must listen to the experts." },
+    { "id": "t2_03", "text": "Protect your family today." }
+  ]
+}

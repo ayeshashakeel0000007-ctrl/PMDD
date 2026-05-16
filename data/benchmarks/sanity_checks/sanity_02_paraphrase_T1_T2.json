@@ -1,0 +1,19 @@
+{
+  "corpus_id": "SANITY-02-PARAPHRASE",
+  "expected_behavior": {
+    "semantic_stability": "high",
+    "aggression": "minimal",
+    "drift": "low",
+    "transitivity_shift": "minimal"
+  },
+  "time_1": [
+    { "id": "t1_01", "text": "We anticipate a slight delay in deployment." },
+    { "id": "t1_02", "text": "The board approved the budget." },
+    { "id": "t1_03", "text": "Employees must submit their timesheets." }
+  ],
+  "time_2": [
+    { "id": "t2_01", "text": "We expect a minor postponement in the release." },
+    { "id": "t2_02", "text": "The budget was authorized by the board." },
+    { "id": "t2_03", "text": "All staff are required to turn in their hours." }
+  ]
+}

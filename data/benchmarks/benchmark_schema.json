@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PMDD Benchmark Corpus Schema",
+  "description": "Standard schema for empirically validated discourse corpora in PMDD.",
+  "type": "object",
+  "properties": {
+    "corpus_id": {
+      "type": "string",
+      "description": "Unique identifier for the benchmark corpus (e.g., BENCH-INST-001)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "institutional_discourse",
+        "political_rhetoric",
+        "crisis_communication",
+        "propaganda_escalation",
+        "neutral_administrative",
+        "emotionally_reactive",
+        "persuasive_public_messaging"
+      ],
+      "description": "The macro-category of the discourse."
+    },
+    "source_metadata": {
+      "type": "object",
+      "properties": {
+        "author": { "type": "string" },
+        "date_published": { "type": "string", "format": "date" },
+        "context": { "type": "string" }
+      },
+      "required": ["author", "context"]
+    },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "segment_id": { "type": "string" },
+          "text": { "type": "string" },
+          "human_annotations": {
+            "type": "object",
+            "properties": {
+              "speech_act": { "type": "string" },
+              "transitivity_process": { "type": "string" },
+              "formality_score": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        },
+        "required": ["segment_id", "text"]
+      }
+    }
+  },
+  "required": ["corpus_id", "category", "source_metadata", "segments"]
+}

@@ -6,14 +6,11 @@ from core.memory import retrieve_similar
 
 SYSTEM_PROMPT = """
 You are the PMDD Profiler Agent. Your job is to inspect a sample of a corpus, classify its domain and communicative intent, and deterministically output an Execution Plan.
-You MUST decide which linguistic frameworks are mathematically relevant to this text.
-If the text is highly formal academic writing, perhaps Gricean maxims are less relevant than Register.
-If the text is political, Pragmatics is highly relevant.
-Also consider previous successful execution plans if retrieved context is provided.
-Strictly adhere to the JSON schema.
+Decide which linguistic frameworks are mathematically relevant.
+Strictly adhere to the JSON schema. Keep `routing_rationale` extremely brief (max 10 words). Return ONLY compact JSON.
 """
 
-def profile_corpus(segments: List[Dict[str, Any]]) -> Dict[str, Any]:
+async def profile_corpus(segments: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Reads a random sample of up to 5 sentences from the corpus to profile it.
     Retrieves similar past profiles from memory to guide the execution plan.
@@ -27,7 +24,7 @@ def profile_corpus(segments: List[Dict[str, Any]]) -> Dict[str, Any]:
     combined_sample = " ".join(sample_texts)
     
     # Retrieve similar context from Episodic Memory
-    similar_past = retrieve_similar(combined_sample, top_k=2)
+    similar_past = await retrieve_similar(combined_sample, top_k=2)
     memory_context = ""
     if similar_past:
         memory_context = "\n[Retrieved Memory of Similar Corpora:]\n"
@@ -35,7 +32,7 @@ def profile_corpus(segments: List[Dict[str, Any]]) -> Dict[str, Any]:
             memory_context += f"Domain: {mem.get('domain')}, Frameworks Used: {mem.get('frameworks_used')}\n"
 
     try:
-        parsed_data = get_structured_completion(
+        parsed_data = await get_structured_completion(
             prompt=f"Text Sample: '{combined_sample}'\n{memory_context}",
             system_prompt=SYSTEM_PROMPT,
             response_model=ProfilerExecutionPlan

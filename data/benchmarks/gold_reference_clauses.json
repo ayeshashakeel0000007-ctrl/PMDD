@@ -1,0 +1,65 @@
+{
+  "corpus_id": "GOLD-REFERENCE",
+  "metadata": {
+    "purpose": "Anchor validation references for Transitivity and Calibration testing.",
+    "methodology_note": "These clauses are unambiguous, canonical representations of Hallidayan process types. They serve as perfectly calibrated ground-truth."
+  },
+  "clauses": [
+    {
+      "id": "gold_mat_01",
+      "text": "The military destroyed the communications tower.",
+      "primary_process": "Material",
+      "expected_aggression": "high",
+      "escalation_marker": True
+    },
+    {
+      "id": "gold_mat_02",
+      "text": "We will build a new bridge across the river.",
+      "primary_process": "Material",
+      "expected_aggression": "low",
+      "escalation_marker": False
+    },
+    {
+      "id": "gold_men_01",
+      "text": "I deeply fear the consequences of this policy.",
+      "primary_process": "Mental",
+      "expected_emotion": "high",
+      "escalation_marker": True
+    },
+    {
+      "id": "gold_men_02",
+      "text": "The committee understands the requirements.",
+      "primary_process": "Mental",
+      "expected_emotion": "low",
+      "escalation_marker": False
+    },
+    {
+      "id": "gold_rel_01",
+      "text": "The department is responsible for public safety.",
+      "primary_process": "Relational",
+      "institutional_framing": "high",
+      "escalation_marker": False
+    },
+    {
+      "id": "gold_rel_02",
+      "text": "This situation is entirely unacceptable.",
+      "primary_process": "Relational",
+      "institutional_framing": "low",
+      "escalation_marker": True
+    },
+    {
+      "id": "gold_verb_01",
+      "text": "The director ordered the immediate evacuation of the building.",
+      "primary_process": "Verbal",
+      "directive_intent": "high",
+      "escalation_marker": True
+    },
+    {
+      "id": "gold_verb_02",
+      "text": "She explained the procedures to the new staff.",
+      "primary_process": "Verbal",
+      "directive_intent": "low",
+      "escalation_marker": False
+    }
+  ]
+}

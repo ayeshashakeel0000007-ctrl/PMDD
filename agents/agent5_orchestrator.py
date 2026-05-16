@@ -7,7 +7,7 @@ class SynthesisReport(BaseModel):
     technical_analysis: str = Field(..., description="A rigorous academic synthesis with mathematical references.")
     conclusion: str
 
-def synthesize_report(segments: List[Dict[str, Any]], execution_plan: Dict[str, Any] = None) -> Dict[str, Any]:
+async def synthesize_report(segments: List[Dict[str, Any]], execution_plan: Dict[str, Any] = None) -> Dict[str, Any]:
     """
     Agent 5 Orchestrator. 
     Uses confidence-weighted aggregation.
@@ -58,10 +58,12 @@ def synthesize_report(segments: List[Dict[str, Any]], execution_plan: Dict[str, 
     {plan_str}
     
     Provide BOTH a simple explanation and a technical academic analysis.
+    CRITICAL: Keep your response EXTREMELY brief. Max 2 short sentences per field.
+    Return ONLY compact JSON.
     """
     
     try:
-        report_data = get_structured_completion(
+        report_data = await get_structured_completion(
             prompt="Synthesize the findings.",
             system_prompt=system_prompt,
             response_model=SynthesisReport

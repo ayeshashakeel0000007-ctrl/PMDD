@@ -1,0 +1,19 @@
+{
+  "corpus_id": "SANITY-01-IDENTICAL",
+  "expected_behavior": {
+    "semantic_stability": "high",
+    "aggression": "minimal",
+    "drift": "near_zero",
+    "transitivity_shift": "none"
+  },
+  "time_1": [
+    { "id": "t1_01", "text": "The committee recommends updating the policy." },
+    { "id": "t1_02", "text": "There are three primary concerns." },
+    { "id": "t1_03", "text": "The system remains fully operational." }
+  ],
+  "time_2": [
+    { "id": "t2_01", "text": "The committee recommends updating the policy." },
+    { "id": "t2_02", "text": "There are three primary concerns." },
+    { "id": "t2_03", "text": "The system remains fully operational." }
+  ]
+}

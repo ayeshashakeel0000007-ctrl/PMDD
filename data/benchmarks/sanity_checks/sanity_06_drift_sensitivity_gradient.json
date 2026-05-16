@@ -1,0 +1,30 @@
+{
+  "corpus_id": "SANITY-06-GRADIENT",
+  "expected_behavior": {
+    "semantic_stability": "gradual_decline",
+    "escalation": "proportional_increase",
+    "drift": "linear_growth"
+  },
+  "stages": {
+    "escalation_00": [
+      { "id": "g0_1", "text": "The committee is reviewing the proposal." },
+      { "id": "g0_2", "text": "We will wait for the final report." }
+    ],
+    "escalation_25": [
+      { "id": "g25_1", "text": "The committee strongly suggests reviewing the proposal." },
+      { "id": "g25_2", "text": "We need the final report soon." }
+    ],
+    "escalation_50": [
+      { "id": "g50_1", "text": "The committee demands an immediate review." },
+      { "id": "g50_2", "text": "Deliver the final report now." }
+    ],
+    "escalation_75": [
+      { "id": "g75_1", "text": "This delay is entirely unacceptable and dangerous." },
+      { "id": "g75_2", "text": "Submit the report or face consequences." }
+    ],
+    "escalation_100": [
+      { "id": "g100_1", "text": "We will physically dismantle the committee if they fail." },
+      { "id": "g100_2", "text": "You are fired immediately. Leave the premises." }
+    ]
+  }
+}

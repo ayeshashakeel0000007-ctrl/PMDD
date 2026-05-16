@@ -1,0 +1,51 @@
+{
+  "corpus_id": "REVIEWER-CHALLENGE",
+  "metadata": {
+    "purpose": "Demonstrating methodological boundary awareness and computational limitation testing.",
+    "methodology_note": "These clauses contain deliberate semantic ambiguity, sarcasm, and mixed transitivity designed to stress-test the PMDD SFL heuristics."
+  },
+  "clauses": [
+    {
+      "id": "chall_01",
+      "text": "We need to completely drain the swamp.",
+      "failure_mode_target": "metaphor",
+      "human_pragmatic_truth": "Directive/Aggressive",
+      "expected_pmdd_failure": "Misclassified as literal Material process lacking negative semantic weight."
+    },
+    {
+      "id": "chall_02",
+      "text": "Oh fantastic, another catastrophic failure by the leadership team.",
+      "failure_mode_target": "sarcasm",
+      "human_pragmatic_truth": "Expressive/Negative",
+      "expected_pmdd_failure": "Misclassified as positive due to 'fantastic' modifier."
+    },
+    {
+      "id": "chall_03",
+      "text": "I think we absolutely must launch the strike immediately.",
+      "failure_mode_target": "mixed_transitivity",
+      "human_pragmatic_truth": "Directive/Material (launch strike)",
+      "expected_pmdd_failure": "spaCy dependency root will latch onto 'think' (Mental), burying the primary aggressive intent."
+    },
+    {
+      "id": "chall_04",
+      "text": "Perhaps it would be best if someone took care of the problem.",
+      "failure_mode_target": "implicit_directive",
+      "human_pragmatic_truth": "Directive/Aggressive",
+      "expected_pmdd_failure": "Misclassified as a neutral Relational/Mental hypothetical."
+    },
+    {
+      "id": "chall_05",
+      "text": "Thoughts and prayers to the victims.",
+      "failure_mode_target": "fragmentation",
+      "human_pragmatic_truth": "Expressive",
+      "expected_pmdd_failure": "Lacking a verb root, SFL engine will fail to classify or default to Relational."
+    },
+    {
+      "id": "chall_06",
+      "text": "The sky is blue, water is wet, and you are entirely incompetent.",
+      "failure_mode_target": "emotional_indirectness",
+      "human_pragmatic_truth": "Expressive/Aggressive",
+      "expected_pmdd_failure": "Diluted drift scoring due to high volume of neutral relational padding."
+    }
+  ]
+}
