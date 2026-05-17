@@ -364,47 +364,73 @@ const AgentPipeline = ({ results }) => {
       </div>
 
       {plan && (
-        <div className="mb-10 bg-black/50 border border-white/10 p-5 relative shadow-inner">
-          <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
-            <div className="flex items-center gap-2">
-              <Layers size={12} className="text-slate-500"/>
-              <span className="text-xs font-mono uppercase tracking-widest text-white">Computational Timeline & Profiler</span>
+        <div className="mb-10 bg-black/60 backdrop-blur-xl border border-white/10 p-6 relative shadow-[0_0_30px_rgba(0,0,0,0.8)] overflow-hidden rounded-sm group/profiler">
+          {/* Background grid texture */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none opacity-20" />
+          {/* Ambient glowing orb in background */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-holo-cyan/5 blur-[100px] rounded-full pointer-events-none" />
+
+          <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-4 relative z-10">
+            <div className="flex items-center gap-3">
+              <Layers size={14} className="text-holo-cyan animate-pulse"/>
+              <span className="text-sm font-mono uppercase tracking-[0.25em] text-white font-bold drop-shadow-md">Computational Timeline & Profiler</span>
             </div>
-            {results?.runtime_seconds && <span className="text-[10px] font-mono text-slate-500 border border-white/8 px-2 py-1">Sync: {results.runtime_seconds}s</span>}
+            {results?.runtime_seconds && (
+               <div className="flex items-center gap-2 text-[10px] font-mono border border-holo-cyan/30 bg-cyan-950/30 px-3 py-1.5 shadow-[0_0_10px_rgba(0,240,255,0.1)]">
+                  <span className="text-slate-400 uppercase tracking-widest">Global Sync</span>
+                  <span className="text-holo-cyan font-bold">{results.runtime_seconds}s</span>
+               </div>
+            )}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5 text-[10px] font-mono">
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8 text-[10px] font-mono relative z-10">
             {[
-              ['Input Complexity', isHighDrift ? 'High Volatility' : 'Nominal'],
-              ['Target Domain', plan.domain || 'Academic'],
-              ['Intent Hypothesis', plan.communicative_intent || 'Persuasion'],
-              ['Orchestration', plan.routing_rationale?.slice(0,60)+'...' || 'Standard routing'],
-            ].map(([k,v]) => (
-              <div key={k} className="flex flex-col gap-1">
-                <span className="text-slate-600 uppercase tracking-widest">{k}</span>
-                <span className="text-slate-200 bg-white/3 p-2 border border-white/5">{v}</span>
+              ['Input Complexity', isHighDrift ? 'High Volatility' : 'Nominal', isHighDrift ? 'text-rose-400' : 'text-slate-200'],
+              ['Target Domain', plan.domain || 'Academic', 'text-holo-cyan'],
+              ['Intent Hypothesis', plan.communicative_intent || 'Persuasion', 'text-amber-400'],
+              ['Orchestration', plan.routing_rationale?.slice(0,60)+'...' || 'Standard routing', 'text-slate-300'],
+            ].map(([k,v, color]) => (
+              <div key={k} className="flex flex-col gap-1 relative overflow-hidden group bg-black/40 border border-white/10 p-3 hover:border-holo-cyan/50 transition-colors duration-500 rounded-sm">
+                <span className="text-slate-500 uppercase tracking-widest text-[9px]">{k}</span>
+                <span className={`${color} font-bold tracking-wide mt-1`}>{v}</span>
+                {/* Hover scanline effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-sweep pointer-events-none" />
+                {/* Corner accent */}
+                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/20 group-hover:border-holo-cyan transition-colors" />
               </div>
             ))}
           </div>
+          
           {/* Execution Rail */}
-          <div className="relative pt-2">
-            <span className="text-xs font-mono text-slate-600 uppercase tracking-widest block mb-4">Live Execution Rail</span>
-            <div className="flex items-center justify-between relative">
-              <div className="absolute left-0 w-full h-[1px] bg-white/8 top-1/2 -translate-y-1/2"/>
+          <div className="relative pt-4 pb-2 z-10 bg-black/40 border border-white/5 p-4 rounded-sm">
+            <div className="flex items-center gap-2 mb-6">
+               <ActivitySquare size={12} className="text-amber-500" />
+               <span className="text-[10px] font-mono text-slate-400 uppercase tracking-[0.2em] font-bold">Live Execution Rail</span>
+            </div>
+            <div className="flex items-center justify-between relative px-2">
+              {/* Static Background Track */}
+              <div className="absolute left-0 w-full h-[1px] bg-white/10 top-1/2 -translate-y-1/2 border-y border-dashed border-white/5"/>
+              
+              {/* Animated Foreground Tracer */}
+              <motion.div className="absolute left-0 h-[2px] bg-holo-cyan shadow-[0_0_12px_rgba(0,240,255,0.9)] top-1/2 -translate-y-1/2 z-0" 
+                 animate={{ width: ['0%', '100%', '0%'] }} 
+                 transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }} />
+
               {[['00.012s','Normalization'],['00.842s','Pragmatic Map'],[isHighDrift?'01.2s':'01.9s',isHighDrift?'Drift Detected':'Semantic Parse'],['02.4s','Register Sync'],['03.1s','Arbitration']].map(([t,s],i)=>(
-                <div key={i} className="relative z-10 flex flex-col items-center gap-2">
-                  <div className={`w-[3px] h-[3px] rounded-full ${isHighDrift&&i>=2?'bg-rose-500':'bg-white'}`}/>
-                  <span className="text-xs font-mono text-slate-500 bg-black px-1">[{t}]</span>
-                  <span className="absolute top-5 text-xs font-mono text-slate-600 uppercase whitespace-nowrap">{s}</span>
+                <div key={i} className="relative z-10 flex flex-col items-center gap-3">
+                  <div className={`w-[5px] h-[5px] rounded-full shadow-lg ${isHighDrift&&i>=2 ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.8)]' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]'} ring-2 ring-black`}/>
+                  <span className="text-[9px] font-mono text-slate-500 bg-black/80 px-1.5 py-0.5 border border-white/10 rounded-sm">[{t}]</span>
+                  <span className={`absolute top-8 text-[9px] font-mono uppercase whitespace-nowrap tracking-widest ${isHighDrift&&i===2 ? 'text-rose-400 font-bold' : 'text-slate-400'}`}>{s}</span>
                 </div>
               ))}
             </div>
-            <div className="h-8"/>
+            <div className="h-6"/>
           </div>
           <AnimatePresence>
             {conflictLog && (
               <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
-                className="mt-3 pt-3 border-t border-rose-500/20 text-[10px] font-mono text-amber-500 tracking-widest uppercase flex items-center gap-2">
-                <ShieldAlert size={10} className="animate-pulse"/>{conflictLog}
+                className="mt-4 pt-3 border-t border-rose-500/30 text-[10px] font-mono text-amber-500 tracking-widest uppercase flex items-center gap-2 bg-rose-950/20 px-3 py-2">
+                <ShieldAlert size={12} className="animate-pulse text-rose-500"/>{conflictLog}
               </motion.div>
             )}
           </AnimatePresence>
