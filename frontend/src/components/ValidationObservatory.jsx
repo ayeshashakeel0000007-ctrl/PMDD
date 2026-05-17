@@ -54,7 +54,7 @@ const ValidationObservatory = ({ results }) => {
                      // Generate a pseudo-normal distribution perturbed by systemic uncertainty
                      const x = (i / 11) * 2 - 1; // -1 to 1
                      const baseNormal = Math.exp(-(x*x)/0.2); 
-                     const perturbed = baseNormal * (1 - (Math.random() * uncert));
+                     const perturbed = baseNormal * (1 - ((i % 3 === 0 ? 0.7 : i % 3 === 1 ? 0.4 : 0.2) * uncert));
                      const h = Math.max(5, perturbed * 100);
                      
                      return (

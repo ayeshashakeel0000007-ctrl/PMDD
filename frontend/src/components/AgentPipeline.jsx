@@ -235,7 +235,7 @@ const InspectionDrawer = ({ agent, results, isHighDrift }) => {
   const math = results?.final_output?.math_scores || {};
   const traces = {
     1: `[NORMALIZE] Token boundary extraction complete.\n[SEGMENT] ${results?.segments?.length || 0} clauses isolated.\n[INDEX] Syntactic dependency graph built.\n[EMIT] Corpus matrix → downstream agents.`,
-    2: `[SAT] Speech Act classifier running.\n[GRICE] Implicature extraction: cooperative violations: ${Math.floor(Math.random()*3)+1}\n[PRESSURE] Deontic modality score: ${(math.pragmatic_entropy||0.5).toFixed(3)}\n[EMIT] Illocutionary vectors → Semantics.`,
+    2: `[SAT] Speech Act classifier running.\n[GRICE] Implicature extraction: cooperative violations: 2\n[PRESSURE] Deontic modality score: ${(math.pragmatic_entropy||0.5).toFixed(3)}\n[EMIT] Illocutionary vectors → Semantics.`,
     3: `[SFL] Transitivity scheme mapping active.\n[DRIFT] Semantic entropy: ${((1-(math.confidence_weighted_formality||0.8))*10).toFixed(3)} bits\n[MIGRATE] Field migration: INSTITUTION → COERCION\n[EMIT] Entropy tensor → Register.`,
     4: `[REGISTER] Formality tensor: ${(math.confidence_weighted_formality||0.8).toFixed(3)}\n[TENOR] Authority pressure: ${isHighDrift ? 'HIGH' : 'MODERATE'}\n[MODE] Institutional override: ${isHighDrift ? 'TRIGGERED' : 'NOMINAL'}\n[EMIT] Override signal → Orchestrator.`,
     5: `[ARBITRATE] Receiving theory tensors...\n[WEIGHT] Pragmatics: 0.84 | Semantics: 0.91 | Register: 0.78\n[RESOLVE] Weighted synthesis accepted.\n[CONCLUDE] Drift magnitude: ${((math.systemic_uncertainty_index||0.05)*100).toFixed(1)}%\n[EMIT] Final interpretability lineage generated.`,
@@ -287,9 +287,9 @@ const InspectionDrawer = ({ agent, results, isHighDrift }) => {
           </div>
           <div className="bg-white/3 p-3 border border-white/5 space-y-2 text-[10px] font-mono text-slate-500">
             {[
-              ['Memory Traffic', `${(Math.random()*50+20).toFixed(1)} MB/s`],
+              ['Memory Traffic', '38.4 MB/s'],
               ['Orch. Pressure', isHighDrift ? 'ELEVATED' : 'NOMINAL'],
-              ['Packet Prop.', `${(Math.random()*100+900).toFixed(0)} ms`],
+              ['Packet Prop.', '947 ms'],
               ['Theory Conflicts', isHighDrift && agent.id >= 3 ? 'DETECTED' : 'NONE'],
             ].map(([k,v]) => (
               <div key={k} className="flex justify-between border-b border-white/3 pb-1">
@@ -301,7 +301,7 @@ const InspectionDrawer = ({ agent, results, isHighDrift }) => {
               <span className="text-slate-600 uppercase block mb-2 text-xs">Cached Semantic Vectors</span>
               <div className="flex gap-[2px] flex-wrap">
                 {[...Array(28)].map((_, i) => (
-                  <div key={i} className={`w-[2px] h-2 ${Math.random() > 0.75 ? (isHighDrift ? 'bg-rose-500' : 'bg-white') : 'bg-white/8'}`}/>
+                  <div key={i} className={`w-[2px] h-2 ${i % 4 === 0 ? (isHighDrift ? 'bg-rose-500' : 'bg-white') : 'bg-white/8'}`}/>
                 ))}
               </div>
             </div>

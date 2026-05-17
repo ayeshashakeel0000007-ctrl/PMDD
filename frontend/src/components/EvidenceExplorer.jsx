@@ -155,7 +155,7 @@ const EvidenceExplorer = ({ results }) => {
                            <Activity size={10} className={`mr-2 ${conf < 0.6 ? 'animate-pulse' : ''}`} />
                            STABILITY: {(pragmatics.confidence * 100).toFixed(0)}%
                          </span>
-                         <span className="text-[7px] font-mono text-slate-500 tracking-widest mt-1 uppercase">Entropy: {((1-conf)*10).toFixed(2)} | Var: ±{(Math.random() * 0.05).toFixed(3)}</span>
+                         <span className="text-[7px] font-mono text-slate-500 tracking-widest mt-1 uppercase">Entropy: {((1-conf)*10).toFixed(2)} | Var: ±{(conf * 0.05).toFixed(3)}</span>
                       </div>
                     )}
                     {isExpanded ? <ChevronDown size={14} className="text-white" /> : <ChevronRight size={14} className="text-slate-600 group-hover:text-white transition-colors" />}

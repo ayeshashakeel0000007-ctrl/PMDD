@@ -49,7 +49,7 @@ const TelemetryOverlay = () => {
        newLogs.forEach((log, index) => {
           setTimeout(() => {
              setLogs(prev => [...prev, log].slice(-6));
-          }, index * (800 + Math.random() * 500));
+          }, index * 900);
        });
     } else {
        // Real-Time Cognitive Life (Idle State)
@@ -86,7 +86,7 @@ const TelemetryOverlay = () => {
           
           return (
              <motion.div 
-               key={i + log + Math.random()}
+               key={i + log}
                initial={{ opacity: 0, x: 20 }}
                animate={{ opacity: 1, x: 0 }}
                exit={{ opacity: 0, filter: "blur(4px)" }}
