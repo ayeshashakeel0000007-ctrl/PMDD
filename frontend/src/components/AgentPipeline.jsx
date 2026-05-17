@@ -80,13 +80,15 @@ const PacketStream = ({ active, color = 'bg-white', count = 3 }) => {
 };
 
 const EntropyBar = ({ value = 0, label, color = 'bg-white' }) => (
-  <div className="space-y-[3px]">
-    <div className="flex justify-between text-xs font-mono uppercase tracking-widest text-slate-500">
-      <span>{label}</span><span className="text-slate-300">{value}%</span>
+  <div className="space-y-1 group/bar">
+    <div className="flex justify-between text-[9px] font-mono uppercase tracking-[0.1em] text-slate-500">
+      <span>{label}</span><span className="text-white font-bold">{value}%</span>
     </div>
-    <div className="w-full h-[2px] bg-white/5">
-      <motion.div initial={{ width: 0 }} animate={{ width: `${value}%` }} transition={{ duration: 1.2 }}
-        className={`h-full ${color}`} />
+    <div className="w-full h-[3px] bg-black/60 border border-white/10 overflow-hidden relative rounded-sm shadow-inner">
+      <motion.div initial={{ width: 0 }} animate={{ width: `${value}%` }} transition={{ duration: 1.2, ease: "easeOut" }}
+        className={`h-full ${color} relative shadow-[0_0_8px_currentColor]`} >
+          <div className="absolute top-0 right-0 bottom-0 w-2 bg-white/60 blur-[1px]" />
+      </motion.div>
     </div>
   </div>
 );
@@ -144,75 +146,83 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
   const jitter = isConflict ? { x: [0, -1, 1, -1, 0] } : {};
 
   return (
-    <div className={`relative ${dimOpacity} cursor-pointer hover-glow`} onClick={() => onExpand(isExpanded ? null : agent.id)}>
+    <div className={`relative ${dimOpacity} cursor-pointer group/card`} onClick={() => onExpand(isExpanded ? null : agent.id)}>
       <motion.div animate={jitter} transition={{ duration: 0.15, repeat: isConflict ? Infinity : 0 }}
-        className={`glass-panel border ${isConflict ? 'border-amber-500/40' : isActive ? 'border-white/25' : 'border-white/8'} p-4 flex flex-col gap-2 min-h-[360px] relative overflow-hidden`}>
+        className={`bg-black/60 backdrop-blur-md border border-t-2 ${isConflict ? 'border-amber-500/40 border-t-amber-500' : isActive ? 'border-white/25 border-t-holo-cyan' : 'border-white/10 border-t-white/30'} p-4 flex flex-col gap-3 min-h-[380px] relative overflow-hidden rounded-sm shadow-xl transition-all duration-300 group-hover/card:border-holo-cyan/50 group-hover/card:-translate-y-1 group-hover/card:shadow-[0_10px_30px_rgba(0,240,255,0.1)]`}>
 
         {/* Scan line effect */}
-        {isActive && <motion.div animate={{ y: ['0%','100%'] }} transition={{ duration: 2, repeat: Infinity, ease:'linear' }}
-          className="absolute left-0 right-0 h-[1px] bg-white/5 pointer-events-none z-0" />}
+        {isActive && <motion.div animate={{ y: ['-100%','200%'] }} transition={{ duration: 2.5, repeat: Infinity, ease:'linear' }}
+          className={`absolute left-0 right-0 h-[2px] ${isConflict ? 'bg-amber-500/30' : 'bg-holo-cyan/30'} blur-[2px] pointer-events-none z-0`} />}
+          
+        {/* Ambient Corner Glow */}
+        <div className={`absolute top-0 right-0 w-24 h-24 ${isConflict ? 'bg-amber-500/10' : isActive ? 'bg-holo-cyan/10' : 'bg-white/5'} blur-[30px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none`} />
 
         {/* Header */}
-        <div className="flex flex-col gap-1 border-b border-white/8 pb-2 relative z-10">
+        <div className="flex flex-col gap-1.5 border-b border-white/10 pb-3 relative z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className={`${isConflict ? 'text-amber-500' : isActive ? 'text-white' : 'text-slate-500'}`}>{agent.icon}</div>
-              <span className="font-mono text-xs tracking-[0.2em] uppercase font-bold text-white">{agent.name}</span>
+              <div className={`p-1.5 rounded-sm bg-white/5 ${isConflict ? 'text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.2)]' : isActive ? 'text-holo-cyan shadow-[0_0_10px_rgba(0,240,255,0.2)]' : 'text-slate-400'}`}>{agent.icon}</div>
+              <span className="font-mono text-[11px] tracking-[0.2em] uppercase font-bold text-white drop-shadow-sm">{agent.name}</span>
             </div>
-            <div className="flex items-center gap-1">
-              {isConflict && <AlertTriangle size={8} className="text-amber-500 animate-pulse"/>}
-              {cogState === 'Synchronizing' && <Clock size={8} className="text-white animate-pulse"/>}
-              {cogState === 'Consensus Locked' && <CheckCircle2 size={8} className="text-slate-400"/>}
-              <ChevronDown size={10} className={`text-slate-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}/>
+            <div className="flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-sm border border-white/5">
+              {isConflict && <AlertTriangle size={10} className="text-amber-500 animate-pulse"/>}
+              {cogState === 'Synchronizing' && <Clock size={10} className="text-holo-cyan animate-pulse"/>}
+              {cogState === 'Consensus Locked' && <CheckCircle2 size={10} className="text-holo-cyan"/>}
+              <ChevronDown size={10} className={`text-slate-500 transition-transform ${isExpanded ? 'rotate-180 text-holo-cyan' : ''}`}/>
             </div>
           </div>
-          <div className="text-[9px] font-mono tracking-widest uppercase text-slate-500">{agent.role}</div>
+          <div className="text-[9px] font-mono tracking-widest uppercase text-slate-400 mt-1">{agent.role}</div>
         </div>
 
         {/* Cognitive State Badge */}
-        <div className={`text-xs font-mono uppercase tracking-[0.15em] border px-2 py-[2px] w-fit ${stateStyle} ${isConflict ? 'animate-pulse' : ''}`}>
+        <div className={`text-[9px] font-mono uppercase tracking-[0.2em] border px-2.5 py-1 w-fit rounded-sm font-bold shadow-inner ${stateStyle} ${isConflict ? 'animate-pulse bg-amber-950/30' : isActive ? 'bg-cyan-950/20' : 'bg-white/5'}`}>
           {cogState}
         </div>
 
         {/* Analytical Domain & Theory Block */}
-        <div className="bg-white/3 border border-white/5 p-2 relative z-10 flex flex-col gap-2">
+        <div className="bg-black/40 border border-white/5 p-2.5 relative z-10 flex flex-col gap-2.5 rounded-sm">
           <div>
-            <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest block">Analytical Domain</span>
-            <span className="text-[10px] font-mono text-white">{agent.domain}</span>
+            <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest block mb-0.5">Analytical Domain</span>
+            <span className="text-[10px] font-mono text-slate-200">{agent.domain}</span>
           </div>
-          <div className="border-t border-white/5 pt-1">
-            <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest block">Active Theory</span>
-            <span className="text-[10px] font-mono text-white">{agent.theoryDominance}</span>
+          <div className="border-t border-white/5 pt-2">
+            <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest block mb-0.5">Active Theory</span>
+            <span className="text-[10px] font-mono text-holo-cyan drop-shadow-[0_0_5px_rgba(0,240,255,0.5)]">{agent.theoryDominance}</span>
           </div>
         </div>
 
         {/* Metrics Grid */}
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1 relative z-10">
-          {[
-            { label: 'Latency', val: `${metrics.latency}s` },
-            { label: 'Throughput', val: `${metrics.throughput}k/s` },
-            { label: 'Confidence', val: `${metrics.confidence}%` },
-            { label: 'Clauses', val: metrics.throughputClauses },
-          ].map(m => (
-            <div key={m.label} className="flex justify-between text-[10px] font-mono">
-              <span className="text-slate-600 uppercase tracking-widest">{m.label}</span>
-              <span className="text-slate-200">{m.val}</span>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 gap-x-2 gap-y-3 relative z-10 my-1 bg-white/[0.02] p-2 border border-white/5 rounded-sm">
+          <div className="flex flex-col">
+            <span className="text-[8px] text-slate-500 uppercase tracking-widest">Latency</span>
+            <span className="text-[10px] text-white font-mono mt-0.5">{metrics.latency}s</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[8px] text-slate-500 uppercase tracking-widest">Throughput</span>
+            <span className="text-[10px] text-white font-mono mt-0.5">{metrics.throughput}k/s</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[8px] text-slate-500 uppercase tracking-widest">Confidence</span>
+            <span className={`text-[10px] font-mono mt-0.5 font-bold ${isConflict ? 'text-amber-500' : 'text-holo-cyan'}`}>{metrics.confidence}%</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[8px] text-slate-500 uppercase tracking-widest">Clauses</span>
+            <span className="text-[10px] text-white font-mono mt-0.5">{metrics.throughputClauses}</span>
+          </div>
         </div>
 
         {/* Load Bars */}
-        <div className="space-y-1 relative z-10">
+        <div className="space-y-3 relative z-10 mt-1">
           <EntropyBar label="Semantic Load" value={metrics.load} color={isConflict ? 'bg-amber-500' : 'bg-holo-cyan'} />
-          <EntropyBar label="Propagation Pressure" value={metrics.pressure} color={isHighDrift ? 'bg-rose-500' : 'bg-plasma-violet'} />
+          <EntropyBar label="Prop. Pressure" value={metrics.pressure} color={isHighDrift ? 'bg-rose-500' : 'bg-plasma-violet'} />
         </div>
 
         {/* Sync Pulse */}
-        <div className="flex items-center gap-2 relative z-10 mt-auto">
-          <motion.div animate={isActive ? { opacity: [0.3, 1, 0.3] } : {}} transition={{ duration: 1.5, repeat: Infinity }}
-            className={`w-[3px] h-[3px] rounded-full ${isConflict ? 'bg-amber-500' : isActive ? 'bg-white' : 'bg-white/10'}`} />
-          <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest">
-            Sync: {cogState === 'Synchronizing' ? 'AWAIT' : isActive ? 'ACTIVE' : 'IDLE'}
+        <div className="flex items-center gap-2 relative z-10 mt-auto pt-3 border-t border-white/10">
+          <motion.div animate={isActive ? { opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] } : {}} transition={{ duration: 1.5, repeat: Infinity }}
+            className={`w-[5px] h-[5px] rounded-full shadow-md ${isConflict ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]' : isActive ? 'bg-holo-cyan shadow-[0_0_8px_rgba(0,240,255,0.8)]' : 'bg-slate-600'}`} />
+          <span className="text-[9px] font-mono text-slate-400 uppercase tracking-[0.2em] font-bold">
+            Sync: <span className={isActive ? 'text-white' : ''}>{cogState === 'Synchronizing' ? 'AWAIT' : isActive ? 'ACTIVE' : 'IDLE'}</span>
           </span>
         </div>
       </motion.div>
@@ -459,24 +469,42 @@ const AgentPipeline = ({ results }) => {
       </div>
 
       {/* Theory Arbitration Log */}
-      <div className="border-l border-white/10 pl-4 py-2 mt-8">
-        <h4 className="font-mono text-[10px] text-slate-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Terminal size={10}/>Theory Arbitration Logs</h4>
-        <div className="font-mono text-[10px] text-slate-600 space-y-[3px]">
-          <p>[ARBITRATION] Initialization sequence complete.</p>
+      <div className="mt-12 bg-black/80 backdrop-blur-xl border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.8)] rounded-sm overflow-hidden relative">
+        {/* Terminal Header */}
+        <div className="bg-white/5 border-b border-white/10 px-4 py-2 flex items-center justify-between">
+           <h4 className="font-mono text-[10px] text-holo-cyan uppercase tracking-[0.2em] flex items-center gap-2 font-bold">
+              <Terminal size={12}/>Theory Arbitration Logs
+           </h4>
+           <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-white/20"/>
+              <div className="w-2 h-2 rounded-full bg-white/20"/>
+              <div className="w-2 h-2 rounded-full bg-white/20"/>
+           </div>
+        </div>
+        
+        {/* Terminal Body */}
+        <div className="p-5 font-mono text-[11px] text-slate-400 space-y-2 leading-relaxed relative">
+          {/* Subtle Terminal Scanline */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_50%,transparent_50%)] bg-[size:100%_4px] pointer-events-none opacity-50" />
+          
+          <p className="flex items-center gap-2"><span className="text-slate-600">&gt;</span> [ARBITRATION] Initialization sequence complete.</p>
           {isHighDrift ? (
             <>
-              <p className="text-amber-500/80">[ARBITRATION] Pragmatics → coercive escalation detected.</p>
-              <p className="text-amber-500/80">[ARBITRATION] Semantics → lexical mutation bounds exceeded.</p>
-              <p className="text-rose-400/80">[ARBITRATION] Register → institutional override triggered.</p>
-              <p className="text-slate-300">[RESOLUTION] Weighted synthesis accepted. Confidence delta → +0.08</p>
+              <p className="flex items-center gap-2"><span className="text-slate-600">&gt;</span> <span className="text-amber-400">[ARBITRATION] Pragmatics → coercive escalation detected.</span></p>
+              <p className="flex items-center gap-2"><span className="text-slate-600">&gt;</span> <span className="text-amber-400">[ARBITRATION] Semantics → lexical mutation bounds exceeded.</span></p>
+              <p className="flex items-center gap-2"><span className="text-slate-600">&gt;</span> <span className="text-rose-400 font-bold bg-rose-950/50 px-1">[ARBITRATION] Register → institutional override triggered.</span></p>
+              <p className="flex items-center gap-2 mt-4 pt-2 border-t border-white/5"><span className="text-holo-cyan">&gt;</span> <span className="text-holo-cyan drop-shadow-[0_0_5px_rgba(0,240,255,0.5)]">[RESOLUTION] Weighted synthesis accepted. Confidence delta → +0.08</span></p>
             </>
           ) : (
             <>
-              <p>[ARBITRATION] Pragmatics → nominal intent mapping.</p>
-              <p>[ARBITRATION] Register → institutional alignment confirmed.</p>
-              <p className="text-slate-400">[RESOLUTION] Linear consensus reached. Confidence delta → +0.02</p>
+              <p className="flex items-center gap-2"><span className="text-slate-600">&gt;</span> [ARBITRATION] Pragmatics → nominal intent mapping.</p>
+              <p className="flex items-center gap-2"><span className="text-slate-600">&gt;</span> [ARBITRATION] Register → institutional alignment confirmed.</p>
+              <p className="flex items-center gap-2 mt-4 pt-2 border-t border-white/5"><span className="text-holo-cyan">&gt;</span> <span className="text-slate-300">[RESOLUTION] Linear consensus reached. Confidence delta → +0.02</span></p>
             </>
           )}
+          
+          {/* Blinking Cursor */}
+          <motion.div animate={{ opacity: [1, 0, 1] }} transition={{ duration: 1, repeat: Infinity }} className="w-2 h-4 bg-holo-cyan inline-block align-middle ml-2 mt-2 shadow-[0_0_8px_rgba(0,240,255,0.8)]" />
         </div>
       </div>
     </div>
