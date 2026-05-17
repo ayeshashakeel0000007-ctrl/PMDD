@@ -73,11 +73,15 @@ const MeaningRiver = memo(({ data }) => {
        <defs>
          <linearGradient id="riv1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#00f0ff" stopOpacity="0.8"/><stop offset="100%" stopColor="#fff" stopOpacity="0.4"/></linearGradient>
          <linearGradient id="riv2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#fff" stopOpacity="0.4"/><stop offset="100%" stopColor="#f43f5e" stopOpacity="0.9"/></linearGradient>
+         <filter id="turb">
+           <feTurbulence type="fractalNoise" baseFrequency={isHighDrift ? 0.08 : 0.01} numOctaves="3" result="noise" />
+           <feDisplacementMap in="SourceGraphic" in2="noise" scale={isHighDrift ? 25 : 5} xChannelSelector="R" yChannelSelector="G" />
+         </filter>
        </defs>
-       <motion.path d="M -50 100 Q 100 20, 200 100 T 450 100" fill="none" stroke="url(#riv1)" strokeWidth="15" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, ease: "easeInOut" }} className="paper-mode-stroke-black" />
-       <motion.path d={isHighDrift ? "M 150 100 Q 200 180, 250 50 T 450 150" : "M 150 100 Q 250 180, 450 60"} fill="none" stroke="url(#riv2)" strokeWidth={isHighDrift ? 20 : 10} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.5, ease: "easeInOut" }} />
+       <motion.path d="M -50 100 Q 100 20, 200 100 T 450 100" fill="none" stroke="url(#riv1)" strokeWidth="15" filter="url(#turb)" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, ease: "easeInOut" }} className="paper-mode-stroke-black" />
+       <motion.path d={isHighDrift ? "M 150 100 Q 200 180, 250 50 T 450 150" : "M 150 100 Q 250 180, 450 60"} fill="none" stroke="url(#riv2)" strokeWidth={isHighDrift ? 20 : 10} filter="url(#turb)" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.5, ease: "easeInOut" }} />
        {[...Array(isHighDrift ? 20 : 5)].map((_, i) => (
-         <motion.circle key={i} r={isHighDrift ? "4" : "2"} fill="#fff" initial={{ offsetDistance: '0%' }} animate={{ offsetDistance: '100%' }} transition={{ duration: Number.isFinite(flowDuration) ? flowDuration + (i * 0.17 % 1) : 4, repeat: Infinity, delay: i * 0.2, ease: 'linear' }} style={{ offsetPath: isHighDrift && i % 2 === 0 ? "path('M 150 100 Q 200 180, 250 50 T 450 150')" : "path('M -50 100 Q 100 20, 200 100 T 450 100')" }} className="paper-mode-fill-black"/>
+         <motion.circle key={i} r={isHighDrift ? "4" : "2"} fill="#fff" filter="blur(1px)" initial={{ offsetDistance: '0%' }} animate={{ offsetDistance: '100%' }} transition={{ duration: flowDuration + (i * 0.17 % 1), repeat: Infinity, delay: i * 0.2, ease: 'linear' }} style={{ offsetPath: isHighDrift && i % 2 === 0 ? "path('M 150 100 Q 200 180, 250 50 T 450 150')" : "path('M -50 100 Q 100 20, 200 100 T 450 100')" }} className="paper-mode-fill-black"/>
        ))}
     </svg>
     <div className="absolute top-0 left-4 h-full flex flex-col justify-between py-12 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
@@ -367,7 +371,7 @@ function App() {
         </AnimatePresence>
 
         <footer className="mt-32 pb-16 text-center">
-            <h3 className="text-white/60 font-serif italic text-xl animate-pulse drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">Made by Ayesha Sheikh</h3>
+            <h3 className="text-white/60 font-serif italic text-xl footer-glow">Made by Ayesha Shakeel</h3>
         </footer>
       </main>
     </div>

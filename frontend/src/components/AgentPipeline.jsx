@@ -122,12 +122,13 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
 
     function finalizeMetrics() {
       const base = { 1: 0.12, 2: 0.38, 3: 0.61, 4: 0.84, 5: 1.02 };
+      const hash = agent.id * 1.618;
       setMetrics({
-        latency: (base[agent.id] + Math.random() * 0.08).toFixed(3),
-        throughput: (Math.random() * 4 + 1.5).toFixed(1),
-        confidence: (Math.random() * 15 + 82).toFixed(1),
-        load: Math.round(Math.random() * 30 + 55),
-        pressure: isHighDrift ? Math.round(Math.random() * 30 + 60) : Math.round(Math.random() * 20 + 20),
+        latency: (base[agent.id] + (hash % 0.08)).toFixed(3),
+        throughput: ((hash % 4) + 1.5).toFixed(1),
+        confidence: ((hash % 15) + 82).toFixed(1),
+        load: Math.round((hash % 30) + 55),
+        pressure: isHighDrift ? Math.round((hash % 30) + 60) : Math.round((hash % 20) + 20),
         throughputClauses: results?.segments?.length || 4,
       });
     }

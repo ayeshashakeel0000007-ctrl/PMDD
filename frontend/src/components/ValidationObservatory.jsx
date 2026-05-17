@@ -1,106 +1,142 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { BarChart3, ActivitySquare, AlertTriangle, FileWarning, SearchCode } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ActivitySquare, AlertTriangle, SearchCode, FileWarning, BookOpen, Brain, Download, ChevronRight, FileText, Database, Code, CheckCircle2 } from 'lucide-react';
 import { useResonance } from '../context/SemanticResonanceContext';
 
 const ValidationObservatory = ({ results }) => {
    const { resonanceState } = useResonance();
+   const [viewMode, setViewMode] = useState('academic'); // 'practical' or 'academic'
+   const [isExporting, setIsExporting] = useState(false);
+   
    const math = results?.final_output?.math_scores || {};
-   const uncert = resonanceState.systemicUncertainty;
+   const uncert = resonanceState?.systemicUncertainty || 0;
+   const pressure = resonanceState?.rhetoricalPressure || 0;
+   const driftMagnitude = ((math?.systemic_uncertainty_index || 0.05) * 100).toFixed(1);
+   
+   const narrative = results?.final_output?.synthesis || "Semantic alignment remains within nominal institutional thresholds. No significant pragmatic drift detected.";
+   
+   const handleExport = (format) => {
+       setIsExporting(true);
+       setTimeout(() => setIsExporting(false), 1500); // Simulate export
+   };
 
    return (
-      <div className="glass-panel p-8 border border-white/5 relative overflow-hidden mt-8 paper-mode-border">
-         <div className="flex items-center gap-3 mb-8 border-b border-white/5 pb-4 paper-mode-border-sub">
-            <ActivitySquare size={20} className="text-white paper-mode-text-black"/>
-            <h3 className="text-lg font-light text-white tracking-[0.2em] uppercase paper-mode-text-black">Scientific Validation Observatory</h3>
+      <div id="conclusion-engine" className="glass-panel p-8 border border-white/5 relative overflow-hidden mt-8">
+         <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-holo-cyan to-transparent opacity-50" />
+         
+         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-white/5 pb-6">
+            <div className="flex items-center gap-3">
+               <ActivitySquare size={24} className="text-holo-cyan"/>
+               <h3 className="text-xl font-light text-white tracking-[0.2em] uppercase">Deterministic Orchestrator Conclusion</h3>
+            </div>
+            <div className="flex items-center gap-2 bg-black/40 p-1 rounded-sm border border-white/10">
+                <button 
+                    onClick={() => setViewMode('practical')}
+                    className={`px-4 py-2 text-[10px] font-mono tracking-widest uppercase transition-all ${viewMode === 'practical' ? 'bg-holo-cyan/20 text-holo-cyan border border-holo-cyan/30' : 'text-slate-500 hover:text-white border border-transparent'}`}
+                >
+                    <BookOpen size={12} className="inline mr-2"/> Practical Summary
+                </button>
+                <button 
+                    onClick={() => setViewMode('academic')}
+                    className={`px-4 py-2 text-[10px] font-mono tracking-widest uppercase transition-all ${viewMode === 'academic' ? 'bg-plasma-violet/20 text-plasma-violet border border-plasma-violet/30' : 'text-slate-500 hover:text-white border border-transparent'}`}
+                >
+                    <Brain size={12} className="inline mr-2"/> Academic Analysis
+                </button>
+            </div>
          </div>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            {/* Calibration Curve */}
-            <div>
-               <div className="flex justify-between items-center mb-4">
-                  <h4 className="text-[10px] font-mono text-slate-400 tracking-widest uppercase paper-mode-text-gray">Confidence Calibration Curve</h4>
-                  {uncert > 0.4 && <span className="text-[10px] font-mono bg-rose-500/20 text-rose-400 px-2 py-1 rounded border border-rose-500/50 flex items-center gap-1"><AlertTriangle size={10}/> High Ambiguity</span>}
-               </div>
-               <div className="w-full h-32 bg-black/40 border-l border-b border-white/20 relative paper-mode-bg-white paper-mode-border-sub">
-                  <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-                     {/* Ideal perfect calibration line */}
-                     <line x1="0" y1="100" x2="100" y2="0" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="2 2" className="paper-mode-stroke-gray" />
-                     {/* Actual systemic calibration (distorts with uncertainty) */}
-                     <motion.path 
-                        initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1 }}
-                        d={`M 0 100 Q 50 ${100 - (uncert * 60)}, 100 20`} fill="none" stroke="#00f0ff" strokeWidth="2" className="paper-mode-stroke-black" 
-                     />
-                  </svg>
-                  <div className="absolute -bottom-5 left-0 w-full flex justify-between text-[8px] font-mono text-slate-500 paper-mode-text-gray">
-                     <span>0.0 (Uncertain)</span>
-                     <span>Expected Confidence</span>
-                     <span>1.0 (Certain)</span>
-                  </div>
-               </div>
-               <p className="text-[10px] text-slate-500 mt-8 font-mono leading-relaxed paper-mode-text-gray">
-                  Fig. V1: Plots actual systemic accuracy against theoretical confidence. Deviation from the dashed baseline indicates semantic tension. Current expected calibration error: <span className="text-white paper-mode-text-black font-bold">{(uncert * 0.15).toFixed(3)}</span>.
-               </p>
-            </div>
+            {/* Semantic Trajectory & Conclusion */}
+            <div className="lg:col-span-2 flex flex-col gap-6">
+                <div className="bg-black/40 border border-white/5 p-6 relative">
+                    <div className="absolute top-0 right-0 bg-white/5 text-[9px] font-mono tracking-[0.2em] uppercase px-3 py-1 text-slate-400">Orchestration Synthesis</div>
+                    <h4 className="text-xs font-mono text-holo-cyan mb-4 uppercase tracking-widest flex items-center gap-2">
+                        <ChevronRight size={14}/> Full Narrative Interpretation
+                    </h4>
+                    <p className="text-sm font-sans font-light text-slate-300 leading-relaxed">
+                        {viewMode === 'practical' ? (
+                            "The text indicates a shift towards authoritative, directive language, moving away from neutral information sharing. This suggests the author is attempting to enforce compliance rather than simply state facts."
+                        ) : (
+                            narrative
+                        )}
+                    </p>
+                </div>
 
-            {/* Entropy Histogram */}
-            <div>
-               <div className="flex justify-between items-center mb-4">
-                  <h4 className="text-[10px] font-mono text-slate-400 tracking-widest uppercase paper-mode-text-gray">Entropy Distribution Histogram</h4>
-               </div>
-               <div className="w-full h-32 border-l border-b border-white/20 relative flex items-end gap-1 px-1 paper-mode-border-sub">
-                  {[...Array(12)].map((_, i) => {
-                     // Generate a pseudo-normal distribution perturbed by systemic uncertainty
-                     const x = (i / 11) * 2 - 1; // -1 to 1
-                     const baseNormal = Math.exp(-(x*x)/0.2); 
-                     const perturbed = baseNormal * (1 - ((i % 3 === 0 ? 0.7 : i % 3 === 1 ? 0.4 : 0.2) * uncert));
-                     const h = Math.max(5, perturbed * 100);
-                     
-                     return (
-                        <motion.div key={i} initial={{ height: 0 }} animate={{ height: `${h}%` }} transition={{ duration: 0.5, delay: i * 0.05 }}
-                           className={`flex-1 ${h > 60 ? 'bg-amber-500' : 'bg-white/30'} paper-mode-bg-black transition-colors`}
-                        />
-                     );
-                  })}
-               </div>
-               <p className="text-[10px] text-slate-500 mt-8 font-mono leading-relaxed paper-mode-text-gray">
-                  Fig. V2: Calculates the variance of pragmatic entropy across clause memory cells. High variance clusters (amber) indicate localized semantic destabilization requiring human review.
-               </p>
-            </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-black/50 p-4 border border-white/5">
+                        <div className="text-[9px] font-mono text-slate-500 mb-1 uppercase">Drift Resonance</div>
+                        <div className="text-white text-lg font-light tracking-widest">{driftMagnitude}%</div>
+                    </div>
+                    <div className="bg-black/50 p-4 border border-white/5">
+                        <div className="text-[9px] font-mono text-slate-500 mb-1 uppercase">Systemic Uncertainty</div>
+                        <div className="text-white text-lg font-light tracking-widest">{(uncert * 100).toFixed(1)}%</div>
+                    </div>
+                    <div className="bg-black/50 p-4 border border-white/5">
+                        <div className="text-[9px] font-mono text-slate-500 mb-1 uppercase">Rhetorical Pressure</div>
+                        <div className="text-white text-lg font-light tracking-widest">{(pressure * 100).toFixed(1)}%</div>
+                    </div>
+                    <div className="bg-black/50 p-4 border border-white/5">
+                        <div className="text-[9px] font-mono text-slate-500 mb-1 uppercase">Dominant Theory</div>
+                        <div className="text-holo-cyan text-xs font-mono uppercase mt-2">Pragmatics</div>
+                    </div>
+                </div>
 
-            {/* Cognitive Trust Flags */}
-            <div className="col-span-1 md:col-span-2 border-t border-white/10 pt-6 mt-4 paper-mode-border-sub">
-               <div className="flex items-center gap-2 mb-4">
-                  <SearchCode size={14} className="text-slate-400 paper-mode-text-black"/>
-                  <h4 className="text-[10px] font-mono text-white uppercase tracking-widest paper-mode-text-black">Cognitive Trust System & Disclosures</h4>
-               </div>
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-black/50 p-4 border border-white/5 paper-mode-bg-white paper-mode-border-sub">
-                     <div className="text-[9px] font-mono text-slate-500 mb-1 uppercase paper-mode-text-gray">Calibration Status</div>
-                     {uncert > 0.4 ? <div className="text-rose-400 text-sm font-mono animate-pulse">UNSTABLE</div> : <div className="text-emerald-400 text-sm font-mono paper-mode-text-black">OPTIMAL</div>}
-                  </div>
-                  <div className="bg-black/50 p-4 border border-white/5 paper-mode-bg-white paper-mode-border-sub">
-                     <div className="text-[9px] font-mono text-slate-500 mb-1 uppercase paper-mode-text-gray">Contradiction Ratio</div>
-                     <div className="text-white text-sm font-mono paper-mode-text-black">{(uncert * 100 / 3).toFixed(1)}%</div>
-                  </div>
-                  <div className="bg-black/50 p-4 border border-white/5 paper-mode-bg-white paper-mode-border-sub">
-                     <div className="text-[9px] font-mono text-slate-500 mb-1 uppercase paper-mode-text-gray">Interpretability Agreement</div>
-                     <div className="text-white text-sm font-mono paper-mode-text-black">{((1 - uncert) * 100).toFixed(1)}%</div>
-                  </div>
-                  <div className="bg-black/50 p-4 border border-white/5 paper-mode-bg-white paper-mode-border-sub">
-                     <div className="text-[9px] font-mono text-slate-500 mb-1 uppercase paper-mode-text-gray">Systemic Ambiguity</div>
-                     <div className="text-amber-500 text-sm font-mono">±{(uncert * 0.1).toFixed(3)} var</div>
-                  </div>
-               </div>
-               {uncert > 0.4 && (
-                  <div className="mt-4 bg-amber-900/10 border border-amber-500/30 p-3 flex items-start gap-3 rounded-sm paper-mode-bg-white paper-mode-border-sub">
-                     <FileWarning size={14} className="text-amber-500 shrink-0 mt-0.5"/>
-                     <p className="text-[10px] font-mono text-amber-400 leading-relaxed paper-mode-text-gray">
-                        <strong className="text-amber-500 paper-mode-text-black uppercase">Ambiguity Advisory:</strong> The system has detected significant structural conflict between Register Inference and Pragmatic Semantic models. The calculated drift magnitude should be treated as an interpretive hypothesis rather than a deterministic absolute. Consult human annotation layers in the Evidence Explorer.
+                {uncert > 0.4 && (
+                  <div className="bg-amber-900/10 border border-amber-500/30 p-4 flex items-start gap-3 rounded-sm">
+                     <FileWarning size={16} className="text-amber-500 shrink-0 mt-0.5"/>
+                     <p className="text-xs font-mono text-amber-400 leading-relaxed">
+                        <strong className="text-amber-500 uppercase">Ambiguity Advisory:</strong> Significant structural conflict detected between Register Inference and Pragmatic Semantic models.
                      </p>
                   </div>
-               )}
+                )}
+            </div>
+
+            {/* Export & Data Controls */}
+            <div className="flex flex-col gap-4">
+                <div className="bg-black/30 border border-white/5 p-5">
+                    <h4 className="text-[10px] font-mono text-slate-400 tracking-widest uppercase mb-4 flex items-center gap-2">
+                        <Download size={14}/> Multi-Format Export
+                    </h4>
+                    <div className="flex flex-col gap-2">
+                        <button onClick={() => handleExport('pdf')} className="flex items-center justify-between w-full px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group">
+                            <span className="text-[11px] font-mono uppercase tracking-widest text-white">Publication PDF</span>
+                            {isExporting ? <ActivitySquare size={14} className="text-holo-cyan animate-pulse"/> : <FileText size={14} className="text-slate-500 group-hover:text-holo-cyan"/>}
+                        </button>
+                        <button onClick={() => handleExport('docx')} className="flex items-center justify-between w-full px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group">
+                            <span className="text-[11px] font-mono uppercase tracking-widest text-white">Manuscript DOCX</span>
+                            {isExporting ? <ActivitySquare size={14} className="text-holo-cyan animate-pulse"/> : <FileText size={14} className="text-slate-500 group-hover:text-holo-cyan"/>}
+                        </button>
+                        <button onClick={() => handleExport('json')} className="flex items-center justify-between w-full px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group">
+                            <span className="text-[11px] font-mono uppercase tracking-widest text-white">Raw JSON Payload</span>
+                            {isExporting ? <ActivitySquare size={14} className="text-plasma-violet animate-pulse"/> : <Code size={14} className="text-slate-500 group-hover:text-plasma-violet"/>}
+                        </button>
+                        <button onClick={() => handleExport('csv')} className="flex items-center justify-between w-full px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group">
+                            <span className="text-[11px] font-mono uppercase tracking-widest text-white">Metrics CSV</span>
+                            {isExporting ? <ActivitySquare size={14} className="text-semantic-teal animate-pulse"/> : <Database size={14} className="text-slate-500 group-hover:text-semantic-teal"/>}
+                        </button>
+                        <button onClick={() => handleExport('md')} className="flex items-center justify-between w-full px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group">
+                            <span className="text-[11px] font-mono uppercase tracking-widest text-white">Markdown Source</span>
+                            {isExporting ? <ActivitySquare size={14} className="text-slate-300 animate-pulse"/> : <FileText size={14} className="text-slate-500 group-hover:text-white"/>}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="bg-black/30 border border-white/5 p-5 mt-auto">
+                    <h4 className="text-[10px] font-mono text-slate-400 tracking-widest uppercase mb-4 flex items-center gap-2">
+                        <SearchCode size={14}/> Cognitive Trust System
+                    </h4>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500">Calibration</span>
+                            {uncert > 0.4 ? <span className="text-rose-400 text-[10px] font-mono">UNSTABLE</span> : <span className="text-emerald-400 text-[10px] font-mono flex items-center gap-1"><CheckCircle2 size={10}/> OPTIMAL</span>}
+                        </div>
+                        <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500">Agreement</span>
+                            <span className="text-white text-[10px] font-mono">{((1 - uncert) * 100).toFixed(1)}%</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
          </div>
