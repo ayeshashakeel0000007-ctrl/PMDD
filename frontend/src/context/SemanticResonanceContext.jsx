@@ -58,8 +58,12 @@ export const SemanticResonanceProvider = ({ children }) => {
     }
 
     const math = data?.final_output?.math_scores || {};
-    const drift = math.pragmatic_drift_intensity || 0;
-    const uncert = math.systemic_uncertainty_index || 0;
+    // Extract raw backend scores
+    const rawEntropy = math.pragmatic_entropy || 0;
+    
+    // Determine drift and uncertainty dynamically if the specific keys are missing
+    const uncert = math.systemic_uncertainty_index || Math.min(rawEntropy / 2.5, 0.95);
+    const drift = math.pragmatic_drift_intensity || (rawEntropy > 1.0 ? Math.min(rawEntropy / 2, 0.85) : Math.min(rawEntropy / 4, 0.35));
 
     let hue = 'cyan';
     let peakMultiplier = 1;

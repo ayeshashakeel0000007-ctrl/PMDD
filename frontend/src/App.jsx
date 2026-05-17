@@ -23,11 +23,19 @@ const MiniCard = ({ title, value, color, desc, highlight }) => {
     return ((hash % 5) * 0.01).toFixed(3);
   }, [value]);
   return (
-  <div className={`glass-panel p-5 flex flex-col justify-between hover-glow group border-l-2 transition-all ${highlight ? 'animate-pulse bg-white/5 border-white/30' : ''}`} style={{borderLeftColor: color}}>
-     <div className="text-[0.65rem] font-mono uppercase tracking-[0.2em] text-slate-500 mb-2">{title}</div>
-     <div className="text-3xl font-light tracking-widest font-mono" style={{color}}>{value}</div>
-     <div className="text-[10px] text-slate-600 mt-3 border-t border-white/5 pt-2 uppercase font-mono tracking-widest">
-       {desc} <span className="float-right text-[8px] text-slate-700">±{variance}</span>
+  <div className={`bg-black/60 backdrop-blur-md border border-white/10 p-6 flex flex-col justify-between hover-glow group transition-all rounded-sm shadow-[0_5px_20px_rgba(0,0,0,0.5)] relative overflow-hidden ${highlight ? 'border-b-2 border-b-rose-500' : 'border-b-2 border-b-holo-cyan/50'}`}>
+     {/* Ambient Background Glow */}
+     <div className="absolute top-0 right-0 w-32 h-32 blur-[40px] opacity-20 pointer-events-none" style={{ backgroundColor: color, transform: 'translate(30%, -30%)' }} />
+     
+     {/* Scanline Sweep */}
+     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-sweep pointer-events-none" />
+
+     <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-400 mb-4 z-10 font-bold">{title}</div>
+     <div className="text-4xl font-light tracking-widest font-mono z-10 drop-shadow-[0_0_15px_currentColor]" style={{color}}>{value}</div>
+     
+     <div className="text-[10px] text-slate-500 mt-6 border-t border-white/10 pt-3 uppercase font-mono tracking-[0.2em] flex justify-between items-center z-10">
+       <span className={highlight ? 'text-rose-400 font-bold' : 'text-slate-400'}>{desc}</span>
+       <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded-sm border border-white/5">±{variance}</span>
      </div>
   </div>
   );
@@ -207,32 +215,43 @@ function App() {
                   <AgentPipeline results={analysisResults} />
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                     <div className="glass-panel p-8 col-span-1 md:col-span-2 flex flex-col justify-center relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-6 opacity-10" style={{color: riskColor}}><ShieldAlert size={120}/></div>
+                     <div className="bg-black/60 backdrop-blur-xl border border-white/10 p-8 col-span-1 md:col-span-2 flex flex-col justify-center relative overflow-hidden group shadow-[0_10px_30px_rgba(0,0,0,0.8)] rounded-sm">
+                        {/* Background Grids & Orbs */}
+                        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:15px_15px] pointer-events-none opacity-30" />
+                        <div className="absolute -top-20 -right-20 w-64 h-64 blur-[80px] rounded-full opacity-20 pointer-events-none transition-colors duration-1000" style={{backgroundColor: riskColor}} />
+                        
+                        <div className="absolute top-0 right-0 p-6 opacity-5 mix-blend-screen transition-colors duration-1000" style={{color: riskColor}}><ShieldAlert size={160}/></div>
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 animate-sweep pointer-events-none opacity-50"></div>
+                        
                         <div className="flex items-start justify-between z-10 relative">
                            <div>
-                              <div className="text-[0.65rem] font-mono text-slate-500 uppercase tracking-[0.3em] mb-4">Calculated Drift Resonance</div>
-                              <div className="flex items-baseline gap-4">
-                                 <div className="text-7xl font-thin font-sans tracking-tighter" style={{color: riskColor}}>{riskScore}%</div>
-                                 <div className="text-xs font-mono tracking-widest uppercase border px-2 py-1" style={{color: riskColor, borderColor: riskColor}}>
+                              <div className="text-[11px] font-mono text-white uppercase tracking-[0.3em] mb-4 flex items-center gap-2 drop-shadow-md">
+                                 <Activity size={14} className="animate-pulse" style={{color: riskColor}}/>
+                                 Calculated Drift Resonance
+                              </div>
+                              <div className="flex items-baseline gap-5">
+                                 <div className="text-7xl font-thin font-sans tracking-tighter drop-shadow-[0_0_15px_currentColor] transition-colors duration-1000" style={{color: riskColor}}>{riskScore}%</div>
+                                 <div className="text-[10px] font-mono tracking-[0.25em] uppercase border px-3 py-1.5 rounded-sm font-bold shadow-inner" style={{color: riskColor, borderColor: riskColor, backgroundColor: riskColor + '20'}}>
                                     {riskScore < 40 ? 'Stable' : riskScore < 75 ? 'Moderate Drift' : riskScore < 90 ? 'High Divergence' : 'Critical Mutation'}
                                  </div>
                               </div>
                            </div>
-                           {/* Temporal Graph placeholder (Visual only) */}
-                           <div className="h-16 w-32 hidden sm:flex items-end gap-1 opacity-60">
+                           
+                           {/* Upgraded Temporal Graph */}
+                           <div className="h-20 w-36 hidden sm:flex items-end gap-1.5 opacity-80 border-b border-white/10 pb-1">
                               {[0.2, 0.4, 0.3, 0.6, 0.5, 0.8, 0.7, 0.9].map((v, i) => (
-                                 <motion.div key={i} className="flex-1 bg-white/40 rounded-t-sm" initial={{height: 0}} animate={{height: `${v * 100}%`}} transition={{delay: i * 0.1}} style={{backgroundColor: v * 100 > 75 ? '#f43f5e' : undefined}}></motion.div>
+                                 <motion.div key={i} className="flex-1 rounded-t-sm shadow-[0_0_8px_currentColor]" initial={{height: 0}} animate={{height: `${v * 100}%`}} transition={{delay: i * 0.1}} style={{backgroundColor: v * 100 > 75 ? '#f43f5e' : (v * 100 > 40 ? '#ffb700' : '#00f0ff')}}></motion.div>
                               ))}
                            </div>
                         </div>
-                        <div className="mt-6 z-10 relative">
-                           <p className="text-[11px] font-mono text-slate-400 bg-black/40 p-3 border-l-2" style={{borderLeftColor: riskColor}}>
-                              {riskScore < 40 ? 'Discourse trajectory remains aligned with baseline communicative intent.' : riskScore < 75 ? 'Emerging semantic shift detected. Minor deviations from institutional baseline.' : 'Discourse trajectory deviates significantly from baseline communicative intent.'}
+                        
+                        <div className="mt-8 z-10 relative">
+                           <p className="text-[11px] font-mono text-slate-300 bg-black/60 p-4 border-l-2 shadow-inner transition-colors duration-1000" style={{borderLeftColor: riskColor}}>
+                              {riskScore < 40 ? 'Discourse trajectory remains robustly aligned with baseline communicative intent.' : riskScore < 75 ? 'Emerging semantic shift detected. Minor coercion deviations from institutional baseline.' : 'CRITICAL: Discourse trajectory deviates significantly from baseline communicative intent.'}
                            </p>
-                           <div className="text-[10px] font-mono tracking-[0.2em] uppercase text-slate-500 mt-4 flex items-center gap-2">
-                              Var: ±0.87% | <Activity size={10} className="inline"/> Realtime Telemetry
+                           <div className="text-[9px] font-mono tracking-[0.3em] uppercase text-slate-500 mt-5 flex items-center gap-3">
+                              <span className="bg-white/5 px-2 py-1 rounded-sm">VAR: ±0.87%</span> 
+                              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full animate-pulse" style={{backgroundColor: riskColor}}/> Realtime Telemetry Synced</span>
                            </div>
                         </div>
                      </div>
