@@ -29,8 +29,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/health")
-async def health_check():
+@app.get("/api/health")
+async def health_check_root():
     """Returns the operational status of the PMDD Engine."""
     return {
         "status": "online",
@@ -333,6 +333,4 @@ async def analyze_longitudinal(request: LongitudinalRequest):
         print(f"Error during longitudinal analysis: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/health")
-async def health_check():
-    return {"status": "healthy"}
+

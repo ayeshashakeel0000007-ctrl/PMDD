@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, memo } from 'react';
+import React, { useState, useRef, useEffect, memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Globe, ShieldAlert, FileText, Download, RotateCcw, ThumbsUp, AlertTriangle, Network, SearchCode, Binary, BookOpen, Save, Layers } from 'lucide-react';
 import LiveAnalysisDashboard from './components/LiveAnalysisDashboard';
@@ -12,6 +12,8 @@ import { useResonance } from './context/SemanticResonanceContext';
 import { useWorkspace } from './context/ResearchWorkspaceContext';
 import { saveAs } from 'file-saver';
 import './index.css';
+
+const STABLE_VALS = [70, 55, 80, 50, 65];
 
 const SemanticConstellation = memo(({ data }) => {
   const { resonanceState } = useResonance();
@@ -31,7 +33,7 @@ const SemanticConstellation = memo(({ data }) => {
     <svg width="300" height="300" viewBox="-150 -150 300 300" className="z-10">
        {['Assertive', 'Directive', 'Commissive', 'Expressive', 'Declaration'].map((label, i) => {
          const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-         const val = Math.random() * 60 + 40; 
+         const val = STABLE_VALS[i];
          const x = Math.cos(angle) * val;
          const y = Math.sin(angle) * val;
          const isDirective = label === 'Directive' || label === 'Expressive';
@@ -79,7 +81,7 @@ const MeaningRiver = memo(({ data }) => {
        <motion.path d="M -50 100 Q 100 20, 200 100 T 450 100" fill="none" stroke="url(#riv1)" strokeWidth="15" filter="url(#turb)" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, ease: "easeInOut" }} className="paper-mode-stroke-black" />
        <motion.path d={isHighDrift ? "M 150 100 Q 200 180, 250 50 T 450 150" : "M 150 100 Q 250 180, 450 60"} fill="none" stroke="url(#riv2)" strokeWidth={isHighDrift ? 20 : 10} filter="url(#turb)" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.5, ease: "easeInOut" }} />
        {[...Array(isHighDrift ? 20 : 5)].map((_, i) => (
-         <motion.circle key={i} r={isHighDrift ? "4" : "2"} fill="#fff" filter="blur(1px)" initial={{ offsetDistance: '0%' }} animate={{ offsetDistance: '100%' }} transition={{ duration: flowDuration + Math.random(), repeat: Infinity, delay: i * 0.2, ease: 'linear' }} style={{ offsetPath: isHighDrift && i % 2 === 0 ? "path('M 150 100 Q 200 180, 250 50 T 450 150')" : "path('M -50 100 Q 100 20, 200 100 T 450 100')" }} className="paper-mode-fill-black"/>
+         <motion.circle key={i} r={isHighDrift ? "4" : "2"} fill="#fff" filter="blur(1px)" initial={{ offsetDistance: '0%' }} animate={{ offsetDistance: '100%' }} transition={{ duration: flowDuration + (i * 0.17 % 1), repeat: Infinity, delay: i * 0.2, ease: 'linear' }} style={{ offsetPath: isHighDrift && i % 2 === 0 ? "path('M 150 100 Q 200 180, 250 50 T 450 150')" : "path('M -50 100 Q 100 20, 200 100 T 450 100')" }} className="paper-mode-fill-black"/>
        ))}
     </svg>
     <div className="absolute top-0 left-4 h-full flex flex-col justify-between py-12 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
@@ -93,15 +95,18 @@ const MeaningRiver = memo(({ data }) => {
   );
 });
 
-const MiniCard = ({ title, value, color, desc, highlight }) => (
+const MiniCard = ({ title, value, color, desc, highlight }) => {
+  const variance = useMemo(() => (Math.random() * 0.05).toFixed(3), [value]);
+  return (
   <div className={`glass-panel p-5 flex flex-col justify-between hover-glow group border-l-2 transition-all ${highlight ? 'animate-pulse bg-white/5 border-white/30' : ''}`} style={{borderLeftColor: color}}>
      <div className="text-[0.65rem] font-mono uppercase tracking-[0.2em] text-slate-500 mb-2">{title}</div>
      <div className="text-3xl font-light tracking-widest font-mono" style={{color}}>{value}</div>
      <div className="text-[10px] text-slate-600 mt-3 border-t border-white/5 pt-2 uppercase font-mono tracking-widest">
-       {desc} <span className="float-right text-[8px] text-slate-700">±{(Math.random() * 0.05).toFixed(3)}</span>
+       {desc} <span className="float-right text-[8px] text-slate-700">±{variance}</span>
      </div>
   </div>
-);
+  );
+};
 
 // --- MAIN APP ---
 
