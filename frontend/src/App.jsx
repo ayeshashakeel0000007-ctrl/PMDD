@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, memo, useMemo } from 'react';
+import { useState, useRef, useEffect, memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Globe, ShieldAlert, FileText, Download, RotateCcw, ThumbsUp, AlertTriangle, Network, SearchCode, Binary, BookOpen, Save, Layers, Activity } from 'lucide-react';
+import { Play, Globe, ShieldAlert, FileText, Binary, Save, Layers, Activity } from 'lucide-react';
 import LiveAnalysisDashboard from './components/LiveAnalysisDashboard';
 import EvidenceExplorer from './components/EvidenceExplorer';
 import AgentPipeline from './components/AgentPipeline';
@@ -15,7 +15,7 @@ import './index.css';
 
 const STABLE_VALS = [70, 55, 80, 50, 65];
 
-const SemanticConstellation = memo(({ data }) => {
+const SemanticConstellation = memo(({ }) => {
   const { resonanceState } = useResonance();
   const intensity = resonanceState.intensityMultiplier;
   const isHighDrift = intensity > 1.5;
@@ -60,7 +60,7 @@ const SemanticConstellation = memo(({ data }) => {
   );
 });
 
-const MeaningRiver = memo(({ data }) => {
+const MeaningRiver = memo(({ }) => {
   const { resonanceState } = useResonance();
   const intensity = resonanceState.intensityMultiplier;
   const isHighDrift = intensity > 1.5;
@@ -120,7 +120,7 @@ function App() {
   const scrollRef = useRef(null);
   const containerRef = useRef(null);
 
-  useEffect(() => { updateResonance(analysisResults, appState); }, [appState, analysisResults]);
+  useEffect(() => { updateResonance(analysisResults, appState); }, [appState, analysisResults, updateResonance]);
 
   const intensity = resonanceState.intensityMultiplier;
   const isHighDrift = intensity > 1.5;
