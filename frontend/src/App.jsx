@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo, useMemo } from 'react';
+import { useState, useRef, useEffect, memo, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Globe, ShieldAlert, FileText, Binary, Save, Layers, Activity } from 'lucide-react';
 import LiveAnalysisDashboard from './components/LiveAnalysisDashboard';
@@ -13,83 +13,7 @@ import { useWorkspace } from './context/ResearchWorkspaceContext';
 import { saveAs } from 'file-saver';
 import './index.css';
 
-const STABLE_VALS = [70, 55, 80, 50, 65];
-
-const SemanticConstellation = memo(({ }) => {
-  const { resonanceState } = useResonance();
-  const intensity = resonanceState.intensityMultiplier;
-  const isHighDrift = intensity > 1.5;
-  const stabilizing = resonanceState.isStabilizing;
-  
-  return (
-  <div className="flex-1 flex items-center justify-center relative w-full min-h-[350px] overflow-hidden group perspective-1000">
-    <motion.div animate={{ rotateZ: isHighDrift ? [0, 360] : [0, 180], rotateX: isHighDrift ? [0, 20, 0] : 0 }} transition={{ duration: isHighDrift ? (stabilizing ? 40 : 20) : 60, repeat: Infinity, ease: "linear" }} className="absolute inset-0 flex items-center justify-center preserve-3d">
-       <svg width="300" height="300" viewBox="-150 -150 300 300">
-          <circle r={50 * intensity} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="2 6" className={isHighDrift ? "animate-spin-slow" : ""} style={{transformOrigin: "center"}}/>
-          <circle r={100} fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="1" />
-          <motion.circle r={140} fill="none" stroke={isHighDrift ? "rgba(244,63,94,0.15)" : "rgba(255,255,255,0.05)"} strokeWidth={1} strokeDasharray="10 20" animate={{ scale: isHighDrift ? [1, 1.05, 1] : 1 }} transition={{ duration: stabilizing ? 4 : 2, repeat: Infinity }} />
-       </svg>
-    </motion.div>
-    <svg width="300" height="300" viewBox="-150 -150 300 300" className="z-10">
-       {['Assertive', 'Directive', 'Commissive', 'Expressive', 'Declaration'].map((label, i) => {
-         const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-         const val = STABLE_VALS[i];
-         const x = Math.cos(angle) * val;
-         const y = Math.sin(angle) * val;
-         const isDirective = label === 'Directive' || label === 'Expressive';
-         const finalX = (isHighDrift && !isDirective) ? x * 0.7 : x;
-         const finalY = (isHighDrift && !isDirective) ? y * 0.7 : y;
-         const radX = isDirective && isHighDrift ? finalX * 1.5 : finalX;
-         const radY = isDirective && isHighDrift ? finalY * 1.5 : finalY;
-         const color = isDirective ? (isHighDrift ? "#f43f5e" : "#fff") : "#00f0ff";
-         const strokeColor = isDirective ? (isHighDrift ? "rgba(244,63,94,0.4)" : "rgba(255,255,255,0.2)") : "rgba(0,240,255,0.2)";
-
-         return (
-           <g key={label} className="cursor-crosshair group/node">
-             <motion.line x1="0" y1="0" x2={radX} y2={radY} stroke={strokeColor} strokeWidth={isDirective && isHighDrift ? 2 : 1} 
-                initial={{ strokeDasharray: "5 5", strokeDashoffset: 0 }} animate={{ strokeDashoffset: isHighDrift ? -20 : -10 }} transition={{ duration: stabilizing ? 2 : 1, repeat: Infinity, ease: "linear" }}
-             />
-             <motion.circle initial={{ r: 0 }} animate={{ r: isDirective ? 12 * intensity : 8 }} transition={{ duration: isHighDrift ? 0.5 : 2, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }} cx={radX} cy={radY} fill={color} opacity="0.8" />
-             <motion.circle cx={radX} cy={radY} r={isDirective ? 24 * Math.min(intensity, 1.5) : 16} fill={strokeColor} animate={{ scale: [1, 1.2, 1] }} transition={{ duration: stabilizing ? 4 : (isHighDrift ? 1 : 4), repeat: Infinity }} />
-             <text x={radX * 1.4} y={radY * 1.4} fill={color} fontSize="10" fontFamily="monospace" textAnchor="middle" dominantBaseline="middle" className="tracking-widest">{label}</text>
-           </g>
-         );
-       })}
-    </svg>
-  </div>
-  );
-});
-
-const MeaningRiver = memo(({ }) => {
-  const { resonanceState } = useResonance();
-  const intensity = resonanceState.intensityMultiplier;
-  const isHighDrift = intensity > 1.5;
-  const flowDuration = isHighDrift ? (resonanceState.isStabilizing ? 2 : 1) : 4;
-
-  return (
-  <div className="flex-1 flex items-center justify-center relative w-full min-h-[350px] overflow-hidden group">
-    <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 pointer-events-none ${isHighDrift ? 'animate-pulse' : 'animate-sweep'}`}></div>
-    <svg width="100%" height="200" viewBox="0 0 400 200" preserveAspectRatio="none">
-       <defs>
-         <linearGradient id="riv1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#00f0ff" stopOpacity="0.8"/><stop offset="100%" stopColor="#fff" stopOpacity="0.4"/></linearGradient>
-         <linearGradient id="riv2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#fff" stopOpacity="0.4"/><stop offset="100%" stopColor="#f43f5e" stopOpacity="0.9"/></linearGradient>
-       </defs>
-       <motion.path d="M -50 100 Q 100 20, 200 100 T 450 100" fill="none" stroke="url(#riv1)" strokeWidth="15" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, ease: "easeInOut" }} className="paper-mode-stroke-black" />
-       <motion.path d={isHighDrift ? "M 150 100 Q 200 180, 250 50 T 450 150" : "M 150 100 Q 250 180, 450 60"} fill="none" stroke="url(#riv2)" strokeWidth={isHighDrift ? 20 : 10} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.5, ease: "easeInOut" }} />
-       {[...Array(isHighDrift ? 20 : 5)].map((_, i) => (
-         <motion.circle key={i} r={isHighDrift ? "4" : "2"} fill="#fff" initial={{ offsetDistance: '0%' }} animate={{ offsetDistance: '100%' }} transition={{ duration: Number.isFinite(flowDuration) ? flowDuration + (i * 0.17 % 1) : 4, repeat: Infinity, delay: i * 0.2, ease: 'linear' }} style={{ offsetPath: isHighDrift && i % 2 === 0 ? "path('M 150 100 Q 200 180, 250 50 T 450 150')" : "path('M -50 100 Q 100 20, 200 100 T 450 100')" }} className="paper-mode-fill-black"/>
-       ))}
-    </svg>
-    <div className="absolute top-0 left-4 h-full flex flex-col justify-between py-12 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-      <span>Information Base</span><span>Nominal Fluid</span>
-    </div>
-    <div className="absolute top-0 right-4 h-full flex flex-col justify-between py-12 text-[10px] font-mono text-right uppercase tracking-widest">
-      <span className="text-white">Formal Vector</span>
-      <span className={`${isHighDrift ? 'text-rose-400 font-bold' : 'text-slate-500'}`}>Contamination Zone</span>
-    </div>
-  </div>
-  );
-});
+// Removed legacy SemanticConstellation and MeaningRiver placeholder components.
 
 const MiniCard = ({ title, value, color, desc, highlight }) => {
   const variance = useMemo(() => {
@@ -131,16 +55,16 @@ function App() {
     setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 100);
   };
 
-  const handleAnalysisStart = () => {
+  const handleAnalysisStart = useCallback(() => {
     setAppState('analyzing');
     setAnalysisResults(null);
-  };
+  }, []);
 
-  const handleResults = (data) => {
+  const handleResults = useCallback((data) => {
     setAnalysisResults(data);
     setAppState('results');
     setTimeout(() => { if(scrollRef.current) scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
-  };
+  }, []);
 
   const exportPDF = async () => {
     if(!containerRef.current) return;
@@ -205,7 +129,7 @@ function App() {
   const compareData = savedSnapshots.find(s => s.id === comparisonTarget)?.results;
 
   return (
-    <div className={`min-h-screen relative overflow-x-hidden text-slate-300 font-sans tracking-wide ${demoMode ? 'demo-mode-active' : ''}`}>
+    <div className={`min-h-screen relative overflow-x-hidden text-slate-300 font-sans tracking-wide text-base md:text-lg ${demoMode ? 'demo-mode-active' : ''}`}>
       <div className={`obs-bg transition-opacity duration-1000 ${isHighDrift ? 'opacity-50' : 'opacity-20'}`} />
       <div className={`ambient-fog transition-opacity duration-1000`} style={{opacity: stabilizing ? 0.05 : (isHighDrift ? 0.03 : 0.01)}} />
       <div className={`scanline ${isHighDrift ? 'animate-scan-fast' : 'animate-scan'}`} />
@@ -239,18 +163,18 @@ function App() {
         
         {appState === 'hero' && (
            <motion.div initial={{opacity:0, y:30}} animate={{opacity:1, y:0}} transition={{duration:1}} className="text-center pt-20">
-             <div className="inline-block mb-6 px-4 py-1 rounded-sm border border-white/20 bg-white/5 text-slate-400 text-[10px] font-mono tracking-[0.3em] uppercase paper-mode-text-black paper-mode-border-black paper-mode-bg-white">
+             <div className="inline-block mb-6 px-4 py-2 rounded-sm border border-white/20 bg-white/5 text-slate-400 text-xs font-mono tracking-[0.3em] uppercase">
                Restricted Research Facility
              </div>
-             <h1 className="text-5xl md:text-7xl font-thin mb-8 tracking-tighter text-white paper-mode-text-black">
+             <h1 className="text-6xl md:text-8xl font-thin mb-8 tracking-tighter text-white drop-shadow-md">
                Pragmatic Meaning Drift
              </h1>
-             <p className="text-sm font-mono text-slate-500 max-w-2xl mx-auto leading-relaxed tracking-[0.2em] uppercase paper-mode-text-gray">
+             <p className="text-lg font-mono text-slate-400 max-w-3xl mx-auto leading-relaxed tracking-[0.2em] uppercase">
                Deterministic Execution & Discourse Intelligence
              </p>
              <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.8}} className="flex justify-center gap-6 mt-20">
-                 <button onClick={launchSystem} className="btn-cinematic-run px-12 py-6 font-mono text-xs tracking-[0.3em] uppercase text-white flex items-center gap-4 group paper-mode-text-black paper-mode-border-black hover:bg-slate-100">
-                    <Play size={16} className="text-holo-cyan group-hover:scale-125 transition-transform paper-mode-text-black"/> INITIALIZE INSTRUMENTATION
+                 <button onClick={launchSystem} className="btn-cinematic-run px-14 py-6 font-mono text-sm tracking-[0.3em] uppercase text-white flex items-center gap-4 group hover:bg-slate-100 hover:text-black">
+                    <Play size={20} className="text-holo-cyan group-hover:scale-125 group-hover:text-black transition-transform"/> INITIALIZE INSTRUMENTATION
                  </button>
              </motion.div>
            </motion.div>
@@ -316,48 +240,7 @@ function App() {
                      <MiniCard title="Rhetorical Pressure" value={`${(resonanceState.rhetoricalPressure * 100).toFixed(1)}%`} color={isHighDrift ? "#f43f5e" : "#00f0ff"} desc="Coercive Modality" highlight={isHighDrift} />
                   </div>
 
-                  {/* COMPARATIVE MODE RENDERING */}
-                  <div className={`grid grid-cols-1 ${compareData ? 'lg:grid-cols-2' : 'lg:grid-cols-2'} gap-8`}>
-                     {/* ACTIVE CORPUS */}
-                     <div className="glass-panel p-6 border-white/5">
-                        <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-                           <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white">Semantic Constellation {compareData && "(ACTIVE)"}</div>
-                        </div>
-                        <SemanticConstellation data={analysisResults} />
-                     </div>
-
-                     {/* COMPARE CORPUS */}
-                     {compareData && (
-                        <div className="glass-panel p-6 border-amber-500/30 bg-amber-900/5 relative">
-                           <div className="absolute top-0 right-0 bg-amber-500 text-black text-[8px] font-mono font-bold px-2 py-1 uppercase">Comparison Snapshot</div>
-                           <div className="flex items-center justify-between mb-6 border-b border-amber-500/20 pb-4">
-                              <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-amber-500">Semantic Constellation (BASELINE)</div>
-                           </div>
-                           <SemanticConstellation data={compareData} />
-                        </div>
-                     )}
-
-                     {/* ACTIVE RIVER */}
-                     <div className="glass-panel p-6 border-white/5">
-                        <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-                           <div className="text-[10px] font-mono text-white uppercase tracking-[0.3em]">Meaning River Dynamics {compareData && "(ACTIVE)"}</div>
-                        </div>
-                        <MeaningRiver data={analysisResults} />
-                     </div>
-
-                     {/* COMPARE RIVER */}
-                     {compareData && (
-                        <div className="glass-panel p-6 border-amber-500/30 bg-amber-900/5 relative">
-                           <div className="absolute top-0 right-0 bg-amber-500 text-black text-[8px] font-mono font-bold px-2 py-1 uppercase">Comparison Snapshot</div>
-                           <div className="flex items-center justify-between mb-6 border-b border-amber-500/20 pb-4">
-                              <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-amber-500">Meaning River (BASELINE)</div>
-                           </div>
-                           <MeaningRiver data={compareData} />
-                        </div>
-                     )}
-                  </div>
-
-                  <DensifiedIntelligence results={analysisResults} />
+                  <DensifiedIntelligence results={analysisResults} compareData={compareData} />
                   <ValidationObservatory results={analysisResults} />
                   <TheoryTraceabilityMatrix results={analysisResults} />
                   <EvidenceExplorer results={analysisResults} />
@@ -367,7 +250,7 @@ function App() {
         </AnimatePresence>
 
         <footer className="mt-32 pb-16 text-center">
-            <h3 className="text-white/60 font-serif italic text-xl animate-pulse drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">Made by Ayesha Sheikh</h3>
+            <h3 className="text-white/80 font-serif italic text-2xl footer-glow uppercase tracking-[0.2em]">Made by Ayesha Sheikh</h3>
         </footer>
       </main>
     </div>

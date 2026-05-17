@@ -1,1 +1,16 @@
-{"projectId":"prj_UZfl61v4cxuyumgC8tjxTYpQLY7g","orgId":"team_3idcSep523kIwUCoiBFLS8QS","projectName":"pmdd_project"}
+{
+  "projectId": "prj_UZfl61v4cxuyumgC8tjxTYpQLY7g",
+  "orgId": "team_3idcSep523kIwUCoiBFLS8QS",
+  "projectName": "pmdd_project",
+  "settings": {
+    "createdAt": 1778339834745,
+    "framework": "fastapi",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": "cd frontend && npm install && npm run build",
+    "outputDirectory": "frontend/dist",
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}

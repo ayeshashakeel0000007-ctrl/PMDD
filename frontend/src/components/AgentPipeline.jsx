@@ -144,9 +144,9 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
   const jitter = isConflict ? { x: [0, -1, 1, -1, 0] } : {};
 
   return (
-    <div className={`relative ${dimOpacity} cursor-pointer`} onClick={() => onExpand(isExpanded ? null : agent.id)}>
+    <div className={`relative ${dimOpacity} cursor-pointer hover-glow`} onClick={() => onExpand(isExpanded ? null : agent.id)}>
       <motion.div animate={jitter} transition={{ duration: 0.15, repeat: isConflict ? Infinity : 0 }}
-        className={`bg-black/70 border ${isConflict ? 'border-amber-500/40' : isActive ? 'border-white/25' : 'border-white/8'} p-3 flex flex-col gap-2 min-h-[360px] relative overflow-hidden`}>
+        className={`glass-panel border ${isConflict ? 'border-amber-500/40' : isActive ? 'border-white/25' : 'border-white/8'} p-4 flex flex-col gap-2 min-h-[360px] relative overflow-hidden`}>
 
         {/* Scan line effect */}
         {isActive && <motion.div animate={{ y: ['0%','100%'] }} transition={{ duration: 2, repeat: Infinity, ease:'linear' }}
@@ -244,7 +244,7 @@ const InspectionDrawer = ({ agent, results, isHighDrift }) => {
 
   return (
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-      className="col-span-full mt-1 bg-black/90 border border-white/10 p-5 relative">
+      className="col-span-full mt-2 glass-panel border border-white/20 p-6 relative shadow-2xl">
       <div className="flex items-center gap-3 mb-5 border-b border-white/8 pb-3">
         <SearchCode size={12} className="text-slate-400"/>
         <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-white">{agent.name} — Deep Inspection</span>
@@ -321,7 +321,7 @@ const AgentPipeline = ({ results }) => {
   const isHighDrift = resonanceState.intensityMultiplier > 1.5;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative border border-white/5 bg-black/40 mt-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative border border-white/5 glass-panel mt-12">
       <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-white/15 via-white/5 to-white/15" />
 
       <div className="mb-8">
@@ -333,7 +333,7 @@ const AgentPipeline = ({ results }) => {
       </div>
 
       {plan && (
-        <div className="mb-10 bg-black/70 border border-white/8 p-4 relative">
+        <div className="mb-10 bg-black/50 border border-white/10 p-5 relative shadow-inner">
           <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
             <div className="flex items-center gap-2">
               <Layers size={12} className="text-slate-500"/>
