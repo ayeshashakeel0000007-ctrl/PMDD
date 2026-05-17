@@ -219,18 +219,30 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
 
       {/* Enhanced Animated Beam to next agent (desktop only) */}
       {agent.id < 5 && (
-        <div className="absolute top-[40%] -right-3 w-6 h-[2px] -translate-y-1/2 overflow-hidden bg-white/5 z-20 hidden md:block">
+        <div className="absolute top-[40%] -right-3 w-6 h-[2px] -translate-y-1/2 overflow-visible z-20 hidden md:block">
           {isActive && (
             <>
+              {/* Primary glowing rail */}
               <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }}
                 transition={{ duration: 0.4, repeat: Infinity, ease: 'linear' }}
                 className={`absolute top-0 h-full w-full bg-gradient-to-r from-transparent via-${isConflict ? 'amber-500' : 'holo-cyan'} to-transparent`} />
               
+              {/* High energy flash */}
               <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }}
                 transition={{ duration: 0.6, repeat: Infinity, ease: 'linear', delay: 0.2 }}
                 className={`absolute top-0 h-full w-1/2 bg-gradient-to-r from-transparent via-white to-transparent blur-[1px] opacity-70`} />
+                
+              {/* Traveling Semantic Packets (Data Payload Nodes) */}
+              <motion.div initial={{ x: -10 }} animate={{ x: 30 }}
+                transition={{ duration: 0.35, repeat: Infinity, ease: 'linear', delay: 0.1 }}
+                className={`absolute -top-[1.5px] h-[5px] w-[5px] rounded-sm bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]`} />
+              <motion.div initial={{ x: -10 }} animate={{ x: 30 }}
+                transition={{ duration: 0.35, repeat: Infinity, ease: 'linear', delay: 0.3 }}
+                className={`absolute -top-[1.5px] h-[3px] w-[8px] bg-${isConflict ? 'amber-400' : 'holo-cyan'} shadow-[0_0_5px_currentColor]`} />
             </>
           )}
+          {/* Static standby rail */}
+          {!isActive && <div className="absolute top-0 h-full w-full bg-white/5 border-b border-white/10 border-dashed" />}
         </div>
       )}
     </div>

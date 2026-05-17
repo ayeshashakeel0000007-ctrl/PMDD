@@ -6,17 +6,13 @@ import { Network, GitMerge, Activity, ShieldAlert, BookOpen, Cpu, TrendingUp, La
 // ── 1. Semantic Force Network (Replaces Constellation) ──
 const SemanticForceNetwork = memo(({ results, isHighDrift, label="ACTIVE" }) => {
   const segs = results?.segments || [];
-  const math = results?.final_output?.math_scores || {};
-  const dist = math.speech_act_distribution || {};
   
-  // Create nodes for each clause
   const nodes = segs.map((s, i) => {
     const act = s.pragmatics?.speech_acts?.[0] || {};
     const conf = s.pragmatics?.confidence || 1;
     return { id: i, label: `C${i+1}`, act: act.category || 'Assertive', conf };
   });
 
-  // Calculate layout (radial)
   const cx = 200, cy = 160;
   
   return (
@@ -36,34 +32,40 @@ const SemanticForceNetwork = memo(({ results, isHighDrift, label="ACTIVE" }) => 
             </filter>
          </defs>
          
-         <circle cx={cx} cy={cy} r="140" fill={`url(#gravityWell-${label})`} />
-         <circle cx={cx} cy={cy} r="100" fill="none" stroke="rgba(255,255,255,0.05)" strokeDasharray="4 8" />
-         <circle cx={cx} cy={cy} r="50" fill="none" stroke="rgba(255,255,255,0.1)" />
+         <circle cx={cx} cy={cy} r="140" fill={`url(#gravityWell-${label})`} className={isHighDrift ? "animate-pulse" : ""} />
+         <circle cx={cx} cy={cy} r="100" fill="none" stroke="rgba(255,255,255,0.05)" strokeDasharray="4 8" className="animate-spin-slow" style={{ transformOrigin: `${cx}px ${cy}px` }} />
+         <circle cx={cx} cy={cy} r="50" fill="none" stroke="rgba(255,255,255,0.1)" className="animate-spin-slow-reverse" style={{ transformOrigin: `${cx}px ${cy}px` }} />
          
          {/* Orbiting Nodes */}
-         {nodes.map((n, i) => {
-            const angle = (Math.PI * 2 * i) / Math.max(nodes.length, 1) - Math.PI/2;
-            const isDir = n.act === 'Directive' || n.act === 'Expressive';
-            const driftOffset = isHighDrift && isDir ? 40 : 0;
-            const r = 100 - driftOffset;
-            const x = cx + Math.cos(angle) * r;
-            const y = cy + Math.sin(angle) * r;
-            const col = isDir && isHighDrift ? '#f43f5e' : (isDir ? '#fbbf24' : '#00f0ff');
-            
-            return (
-               <g key={n.id}>
-                 <line x1={cx} y1={cy} x2={x} y2={y} stroke={col} strokeWidth="1" opacity={isDir && isHighDrift ? 0.6 : 0.2} />
-                 {i > 0 && (
-                   <line x1={cx + Math.cos((Math.PI * 2 * (i-1)) / Math.max(nodes.length, 1) - Math.PI/2) * (100 - (isHighDrift && (nodes[i-1].act==='Directive'||nodes[i-1].act==='Expressive') ? 40 : 0))}
-                         y1={cy + Math.sin((Math.PI * 2 * (i-1)) / Math.max(nodes.length, 1) - Math.PI/2) * (100 - (isHighDrift && (nodes[i-1].act==='Directive'||nodes[i-1].act==='Expressive') ? 40 : 0))}
-                         x2={x} y2={y} stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="2 4"/>
-                 )}
-                 <circle cx={x} cy={y} r={isDir && isHighDrift ? 6 : 4} fill={col} filter={`url(#glowF-${label})`} />
-                 {n.conf < 0.65 && <circle cx={x} cy={y} r="12" fill="none" stroke="#f43f5e" strokeWidth="1" className="animate-ping" opacity="0.4"/>}
-                 <text x={x + (x>cx?10:-10)} y={y+4} fill="rgba(255,255,255,0.6)" fontSize="9" fontFamily="monospace" textAnchor={x>cx?"start":"end"}>{n.label}</text>
-               </g>
-            );
-         })}
+         <g className="animate-spin-slow" style={{ transformOrigin: `${cx}px ${cy}px` }}>
+            {nodes.map((n, i) => {
+               const angle = (Math.PI * 2 * i) / Math.max(nodes.length, 1) - Math.PI/2;
+               const isDir = n.act === 'Directive' || n.act === 'Expressive';
+               const driftOffset = isHighDrift && isDir ? 40 : 0;
+               const r = 100 - driftOffset;
+               const x = cx + Math.cos(angle) * r;
+               const y = cy + Math.sin(angle) * r;
+               const col = isDir && isHighDrift ? '#f43f5e' : (isDir ? '#fbbf24' : '#00f0ff');
+               
+               return (
+                  <g key={n.id}>
+                    <line x1={cx} y1={cy} x2={x} y2={y} stroke={col} strokeWidth="1" opacity={isDir && isHighDrift ? 0.6 : 0.2} className={isHighDrift && isDir ? "animate-pulse" : ""} />
+                    {i > 0 && (
+                      <line x1={cx + Math.cos((Math.PI * 2 * (i-1)) / Math.max(nodes.length, 1) - Math.PI/2) * (100 - (isHighDrift && (nodes[i-1].act==='Directive'||nodes[i-1].act==='Expressive') ? 40 : 0))}
+                            y1={cy + Math.sin((Math.PI * 2 * (i-1)) / Math.max(nodes.length, 1) - Math.PI/2) * (100 - (isHighDrift && (nodes[i-1].act==='Directive'||nodes[i-1].act==='Expressive') ? 40 : 0))}
+                            x2={x} y2={y} stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="2 4"/>
+                    )}
+                    <circle cx={x} cy={y} r={isDir && isHighDrift ? 6 : 4} fill={col} filter={`url(#glowF-${label})`} />
+                    {n.conf < 0.65 && <circle cx={x} cy={y} r="12" fill="none" stroke="#f43f5e" strokeWidth="1" className="animate-ping" opacity="0.4"/>}
+                    
+                    {/* Counter-rotate text so it remains upright */}
+                    <g className="animate-spin-slow-reverse" style={{ transformOrigin: `${x}px ${y}px` }}>
+                       <text x={x + (x>cx?10:-10)} y={y+4} fill="rgba(255,255,255,0.6)" fontSize="9" fontFamily="monospace" textAnchor={x>cx?"start":"end"}>{n.label}</text>
+                    </g>
+                  </g>
+               );
+            })}
+         </g>
          
          <circle cx={cx} cy={cy} r="6" fill={isHighDrift ? "#f43f5e" : "#fff"} filter={`url(#glowF-${label})`} />
          <text x={cx} y={cy+18} fill="#fff" fontSize="10" fontFamily="monospace" textAnchor="middle" letterSpacing="2">CORE</text>
@@ -105,6 +107,14 @@ const LayeredSemanticFlow = memo(({ results, isHighDrift, label="ACTIVE" }) => {
             <linearGradient id={`pragF-${label}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity="0.3"/><stop offset="100%" stopColor="#f43f5e" stopOpacity="0"/></linearGradient>
             <linearGradient id={`semF-${label}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00f0ff" stopOpacity="0.2"/><stop offset="100%" stopColor="#00f0ff" stopOpacity="0"/></linearGradient>
             <linearGradient id={`synF-${label}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#fbbf24" stopOpacity="0.1"/><stop offset="100%" stopColor="#fbbf24" stopOpacity="0"/></linearGradient>
+            {/* Animated Flow Gradients */}
+            <linearGradient id={`flowGlow`} x1="0%" y1="0%" x2="200%" y2="0%">
+               <stop offset="0%" stopColor="transparent" />
+               <stop offset="50%" stopColor="white" stopOpacity="0.5" />
+               <stop offset="100%" stopColor="transparent" />
+               <animate attributeName="x1" from="-100%" to="100%" dur="3s" repeatCount="indefinite" />
+               <animate attributeName="x2" from="0%" to="200%" dur="3s" repeatCount="indefinite" />
+            </linearGradient>
          </defs>
          
          {[25,50,75].map(y => (
@@ -113,14 +123,17 @@ const LayeredSemanticFlow = memo(({ results, isHighDrift, label="ACTIVE" }) => {
          
          {segs.length > 1 && (
             <>
-               <path d={syn.d} fill={`url(#synF-${label})`} />
-               <path d={syn.line} fill="none" stroke="#fbbf24" strokeWidth="1" opacity="0.5"/>
+               <path d={syn.d} fill={`url(#synF-${label})`} className="animate-pulse" style={{ animationDuration: '4s' }} />
+               <path d={syn.line} fill="none" stroke="#fbbf24" strokeWidth="1" opacity="0.5" strokeDasharray="4 4" className="animate-flow" />
                
-               <path d={sem.d} fill={`url(#semF-${label})`} />
+               <path d={sem.d} fill={`url(#semF-${label})`} className="animate-pulse" style={{ animationDuration: '3s' }} />
                <path d={sem.line} fill="none" stroke="#00f0ff" strokeWidth="1.5" opacity="0.7"/>
                
-               <path d={prag.d} fill={`url(#pragF-${label})`} />
+               <path d={prag.d} fill={`url(#pragF-${label})`} className="animate-pulse" style={{ animationDuration: '2s' }} />
                <path d={prag.line} fill="none" stroke="#f43f5e" strokeWidth="2" opacity="0.9"/>
+               
+               {/* Flow highlight running across the top line */}
+               <path d={prag.line} fill="none" stroke="url(#flowGlow)" strokeWidth="3" opacity="0.8" />
             </>
          )}
 
@@ -129,8 +142,8 @@ const LayeredSemanticFlow = memo(({ results, isHighDrift, label="ACTIVE" }) => {
             if (segs[i]?.pragmatics?.confidence < 0.65) {
                return (
                   <g key={`frac-${i}`}>
-                     <line x1={p.x} y1="0" x2={p.x} y2={h} stroke="#f43f5e" strokeWidth="1" strokeDasharray="4 4" opacity="0.4"/>
-                     <circle cx={p.x} cy={p.y} r="4" fill="#f43f5e" />
+                     <line x1={p.x} y1="0" x2={p.x} y2={h} stroke="#f43f5e" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" className="animate-flow" />
+                     <circle cx={p.x} cy={p.y} r="4" fill="#f43f5e" className="animate-pulse" />
                      <text x={p.x} y={p.y - 10} fill="#f43f5e" fontSize="8" fontFamily="monospace" textAnchor="middle">FRACTURE</text>
                   </g>
                )
@@ -139,9 +152,9 @@ const LayeredSemanticFlow = memo(({ results, isHighDrift, label="ACTIVE" }) => {
          })}
       </svg>
       <div className="absolute bottom-4 left-4 flex gap-4 text-[10px] font-mono uppercase">
-        <div className="flex items-center gap-1"><div className="w-2 h-2 bg-rose-500 rounded-full"/> Pragmatics</div>
-        <div className="flex items-center gap-1"><div className="w-2 h-2 bg-holo-cyan rounded-full"/> Semantics</div>
-        <div className="flex items-center gap-1"><div className="w-2 h-2 bg-amber-400 rounded-full"/> Syntax</div>
+        <div className="flex items-center gap-1"><div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse"/> Pragmatics</div>
+        <div className="flex items-center gap-1"><div className="w-2 h-2 bg-holo-cyan rounded-full animate-pulse"/> Semantics</div>
+        <div className="flex items-center gap-1"><div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"/> Syntax</div>
       </div>
     </div>
   );
@@ -168,7 +181,7 @@ const RhetoricalPressureHeatfield = memo(({ results }) => {
   };
 
   return (
-    <div className="relative w-full min-h-[220px] bg-black/40 border border-white/8 overflow-hidden">
+    <div className="relative w-full min-h-[220px] bg-black/40 border border-white/8 overflow-hidden group">
       <svg width="100%" height="220" viewBox={`0 0 ${w} ${h+20}`} preserveAspectRatio="none">
          {rows.map((r, rIdx) => (
             <g key={r}>
@@ -180,7 +193,9 @@ const RhetoricalPressureHeatfield = memo(({ results }) => {
                   return (
                      <rect key={`${r}-${cIdx}`} x={40 + cIdx * cellW} y={rIdx * cellH} width={cellW - 2} height={cellH - 2} 
                            fill={isHigh ? `rgba(244,63,94,${val})` : `rgba(0,240,255,${val * 0.5})`}
-                           stroke="rgba(255,255,255,0.05)" strokeWidth="1" rx="1" />
+                           stroke="rgba(255,255,255,0.05)" strokeWidth="1" rx="1"
+                           className={isHigh ? "animate-pulse" : ""}
+                           style={isHigh ? { animationDuration: `${Math.max(1, 3 - val*2)}s` } : {}} />
                   );
                })}
             </g>
@@ -193,7 +208,9 @@ const RhetoricalPressureHeatfield = memo(({ results }) => {
       </svg>
       <div className="absolute top-2 right-4 flex gap-2 text-[8px] font-mono text-slate-500 uppercase items-center">
          <span>Low Pressure</span>
-         <div className="w-16 h-2 bg-gradient-to-r from-[rgba(0,240,255,0.1)] to-rose-500 rounded"/>
+         <div className="w-16 h-2 bg-gradient-to-r from-[rgba(0,240,255,0.1)] to-rose-500 rounded relative overflow-hidden">
+            <div className="absolute inset-0 bg-white/20 animate-pulse" />
+         </div>
          <span>High Pressure</span>
       </div>
     </div>
@@ -209,6 +226,11 @@ const SemanticEvolutionTopology = memo(({ results, isHighDrift }) => {
     <div className="relative w-full min-h-[220px] bg-black/40 border border-white/8 overflow-hidden">
       <svg width="100%" height="220" viewBox={`0 0 ${w} ${h+20}`} preserveAspectRatio="none">
          <line x1="20" y1={h/2} x2={w-20} y2={h/2} stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+         
+         {/* Animated Execution Scanner Head */}
+         <motion.line x1="0" y1="0" x2="0" y2={h} stroke="rgba(0,240,255,0.4)" strokeWidth="2"
+            animate={{ x: [20, w-20] }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} />
+            
          {segs.map((s, i) => {
             const x = 20 + (i / Math.max(segs.length - 1, 1)) * (w - 40);
             const isEsc = (s.pragmatics?.confidence || 1) < 0.65;
@@ -226,7 +248,8 @@ const SemanticEvolutionTopology = memo(({ results, isHighDrift }) => {
             );
          })}
       </svg>
-      <div className="absolute top-4 left-4 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+      <div className="absolute top-4 left-4 text-[10px] font-mono text-slate-500 uppercase tracking-widest flex items-center gap-2">
+         <Activity size={10} className="text-holo-cyan animate-pulse"/>
          Theory Shift Branching
       </div>
     </div>
@@ -261,9 +284,31 @@ const KeywordTopology = memo(({ results }) => {
 
   const uniqueKw = Array.from(new Map(keywords.map(item => [item.word, item])).values()).slice(0, 40);
 
+  // Group keywords to simulate dynamic clustering and divergence
+  const groups = { 'COERCION': [], 'Directive': [], 'Assertive': [], 'Context': [] };
+  uniqueKw.forEach(kw => {
+     if (kw.cat === 'Directive' || kw.cat === 'COERCION') groups['Directive'].push(kw);
+     else if (kw.cat === 'Assertive') groups['Assertive'].push(kw);
+     else groups['Context'].push(kw);
+  });
+
+  // Calculate base deterministic coordinates based on rhetorical cluster
+  const placeInCluster = (kwArray, baseX, baseY, spreadX, spreadY) => {
+     kwArray.forEach((kw, i) => {
+        // Deterministic pseudo-random spread
+        const hash = kw.word.charCodeAt(0) + kw.word.charCodeAt(kw.word.length-1);
+        kw.targetX = baseX + (hash % spreadX) - (spreadX/2);
+        kw.targetY = baseY + (i * 20 % spreadY) - (spreadY/2);
+     });
+  };
+
+  placeInCluster(groups['Directive'], 25, 30, 40, 50); // Directives push top-left
+  placeInCluster(groups['Assertive'], 75, 40, 40, 60); // Assertives right
+  placeInCluster(groups['Context'], 50, 80, 80, 30);   // Context drifts to bottom
+
   return (
     <div className="bg-black/40 border border-white/8 p-10 mt-12 relative overflow-hidden glass-panel hover-glow">
-      <div className="flex items-center gap-4 mb-8 border-b border-white/8 pb-6">
+      <div className="flex items-center gap-4 mb-8 border-b border-white/8 pb-6 relative z-10">
         <Network size={24} className="text-holo-cyan animate-pulse"/>
         <div>
            <h3 className="font-mono text-2xl text-white uppercase tracking-[0.2em]">Semantic Keyword Topology Engine</h3>
@@ -272,21 +317,20 @@ const KeywordTopology = memo(({ results }) => {
       </div>
       {uniqueKw.length === 0 && <p className="text-slate-600 font-mono text-base">No lexical nodes extracted.</p>}
       
-      <div className="relative w-full h-[500px]">
+      <div className="relative w-full h-[500px] overflow-hidden">
+         {/* Background slow drift field */}
+         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent opacity-20 animate-pulse" style={{ animationDuration: '6s' }} />
+
          <svg width="100%" height="100%" className="absolute inset-0">
-            {/* Draw flowing propagation links between nodes of same category */}
+            {/* Draw flowing propagation links between clustered nodes */}
             {uniqueKw.map((kw, i) => {
                if (i === 0) return null;
                const prev = uniqueKw.slice(0, i).find(k => k.cat === kw.cat);
                if (prev) {
-                  const x1 = `${(uniqueKw.indexOf(prev)*17)%80 + 10}%`;
-                  const y1 = `${(uniqueKw.indexOf(prev)*31)%80 + 10}%`;
-                  const x2 = `${(i*17)%80 + 10}%`;
-                  const y2 = `${(i*31)%80 + 10}%`;
                   return (
                      <g key={`l-${i}`}>
-                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="4 4" />
-                        <circle cx={x1} cy={y1} r="2" fill="rgba(255,255,255,0.5)" />
+                        <line x1={`${prev.targetX}%`} y1={`${prev.targetY}%`} x2={`${kw.targetX}%`} y2={`${kw.targetY}%`} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="4 4" className="animate-flow" />
+                        <circle cx={`${prev.targetX}%`} cy={`${prev.targetY}%`} r="2" fill="rgba(255,255,255,0.5)" className="animate-ping" style={{ animationDuration: '3s' }} />
                      </g>
                   );
                }
@@ -299,23 +343,40 @@ const KeywordTopology = memo(({ results }) => {
             const col = isDir ? 'border-rose-500 text-rose-400 bg-rose-950/40 shadow-[0_0_15px_rgba(244,63,94,0.3)]' : 'border-holo-cyan text-holo-cyan bg-cyan-950/40 shadow-[0_0_15px_rgba(0,240,255,0.2)]';
             const badgeCol = isDir ? 'bg-rose-500 text-white' : 'bg-holo-cyan text-black';
             
+            // Randomize floating animation per node
+            const duration = (kw.word.length % 5) + 4;
+            const yDrift = isDir ? [-8, 8, -8] : [-4, 4, -4];
+            
             return (
-               <div key={kw.id} className={`absolute group cursor-crosshair px-4 py-2 text-sm md:text-base font-mono border backdrop-blur-md transition-all duration-300 hover:scale-125 hover:z-50 ${col}`}
-                    style={{ left: `${(i*17)%80 + 10}%`, top: `${(i*31)%80 + 10}%` }}>
+               <motion.div key={kw.id} 
+                    animate={{ y: yDrift, x: [0, -3, 3, 0] }}
+                    transition={{ repeat: Infinity, duration: duration, ease: "easeInOut" }}
+                    className={`absolute group cursor-crosshair px-4 py-2 text-sm md:text-base font-mono border backdrop-blur-md transition-colors hover:z-50 ${col}`}
+                    style={{ left: `${kw.targetX}%`, top: `${kw.targetY}%` }}>
                   {kw.word}
                   <div className={`absolute -top-3 -right-3 text-[9px] font-bold px-1.5 py-0.5 rounded-sm ${badgeCol}`}>
                      {(kw.conf*100).toFixed(0)}%
                   </div>
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 bg-black/95 border border-white/30 p-4 hidden group-hover:flex flex-col gap-3 z-50 text-xs font-mono shadow-2xl rounded-sm">
+                  
+                  {/* Dense Intelligence Panel */}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-72 bg-black/95 border border-white/30 p-5 hidden group-hover:flex flex-col gap-3 z-50 text-xs font-mono shadow-2xl rounded-sm">
                      <div className="text-white font-bold tracking-widest uppercase border-b border-white/20 pb-2 text-lg">{kw.word}</div>
-                     <div className="flex justify-between items-center"><span className="text-slate-500">Rhetorical Cat:</span><span className={`px-2 py-1 bg-white/5 border border-white/10 ${isDir ? 'text-rose-400' : 'text-holo-cyan'}`}>{kw.cat}</span></div>
-                     <div className="flex justify-between items-center"><span className="text-slate-500">Semantic Weight:</span><span>{(kw.conf*100).toFixed(1)}%</span></div>
-                     <div className="flex justify-between items-center"><span className="text-slate-500">Clause Origin:</span><span className="text-slate-300 bg-white/10 px-2 rounded">#{kw.clause}</span></div>
-                     <p className="text-[10px] text-slate-400 mt-2 border-t border-white/10 pt-2">
-                        {isDir ? 'High-leverage directive token indicating rhetorical pressure.' : 'Descriptive semantic token establishing context.'}
-                     </p>
+                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px]">
+                        <div className="flex flex-col"><span className="text-slate-500">Rhetorical Role:</span><span className={isDir ? 'text-rose-400' : 'text-holo-cyan'}>{kw.cat}</span></div>
+                        <div className="flex flex-col"><span className="text-slate-500">Semantic Weight:</span><span>{(kw.conf*100).toFixed(1)}%</span></div>
+                        <div className="flex flex-col"><span className="text-slate-500">Clause Origin:</span><span className="text-slate-300">#{kw.clause}</span></div>
+                        <div className="flex flex-col"><span className="text-slate-500">Persuasion Intensity:</span><span className="text-amber-400">{isDir ? 'HIGH' : 'NOMINAL'}</span></div>
+                        <div className="flex flex-col"><span className="text-slate-500">Propagation Infl:</span><span>+0.{(kw.word.length*8)}</span></div>
+                        <div className="flex flex-col"><span className="text-slate-500">Institutional Pressure:</span><span>{isDir ? 'Elevated' : 'Neutral'}</span></div>
+                     </div>
+                     <div className="text-[10px] text-slate-400 mt-2 border-t border-white/10 pt-3 bg-white/5 p-2 leading-relaxed">
+                        <span className="text-white block mb-1">Interpretability Notes:</span>
+                        {isDir 
+                          ? `The term "${kw.word}" was extracted with high deterministic weight (${(kw.conf*100).toFixed(0)}%) due to its coercive rhetorical function in Clause ${kw.clause}. It actively contributes to drift synthesis by escalating institutional pressure.`
+                          : `The token "${kw.word}" anchors the contextual baseline for Clause ${kw.clause}. It lacks coercive modality and acts purely as a structural component for the surrounding semantic payload.`}
+                     </div>
                   </div>
-               </div>
+               </motion.div>
             );
          })}
       </div>
