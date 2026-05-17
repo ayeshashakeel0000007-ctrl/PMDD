@@ -256,7 +256,7 @@ const SemanticEvolutionTopology = memo(({ results, isHighDrift }) => {
   );
 });
 
-// ── 5. Keyword Intelligence Topology ──
+// ── 5. Densified Semantic Topology Network ──
 const sanitizeToken = (token) => {
   if (!token) return null;
   const t = token.toLowerCase();
@@ -267,70 +267,132 @@ const sanitizeToken = (token) => {
   return token;
 };
 
+// Deterministic hashing for stable layout
+const hashStr = (str) => {
+   let hash = 0;
+   for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+   return Math.abs(hash);
+};
+
 const KeywordTopology = memo(({ results }) => {
   const keywords = [];
+  
+  // Dense dynamic extraction
   results?.segments?.forEach((seg, sIdx)=>{
+    const clause = sIdx + 1;
+    // Pragmatics
     seg.pragmatics?.speech_acts?.forEach(act=>{
       const cleanWord = sanitizeToken(act.evidence);
       if(!cleanWord) return;
-      keywords.push({ id: `k-p-${sIdx}`, word:cleanWord, cat:act.category, conf:act.confidence, type: 'prag', clause: sIdx + 1 });
+      
+      let category = 'Informational';
+      let colorClass = 'border-cyan-400 text-cyan-300 bg-cyan-950/40 shadow-[0_0_15px_rgba(34,211,238,0.2)]';
+      let badgeClass = 'bg-cyan-500 text-black';
+      let ringColor = 'rgba(34,211,238,0.5)';
+      
+      if (act.category === 'Directive') {
+         category = 'Persuasive';
+         colorClass = 'border-amber-500 text-amber-400 bg-amber-950/40 shadow-[0_0_15px_rgba(245,158,11,0.2)]';
+         badgeClass = 'bg-amber-500 text-black';
+         ringColor = 'rgba(245,158,11,0.5)';
+      }
+      
+      if (act.category === 'Expressive' || act.category === 'COERCION') {
+         category = 'Coercive';
+         colorClass = 'border-rose-500 text-rose-400 bg-rose-950/40 shadow-[0_0_20px_rgba(244,63,94,0.3)]';
+         badgeClass = 'bg-rose-500 text-white';
+         ringColor = 'rgba(244,63,94,0.5)';
+      }
+      
+      keywords.push({ id: `k-p-${sIdx}-${cleanWord}`, word:cleanWord, cat:category, rawCat: act.category, conf:act.confidence || 0.8, type: 'pragmatics', clause, colorClass, badgeClass, ringColor });
     });
-    seg.semantics?.semantic_fields?.slice(0,2).forEach(f=>{
+    
+    // Register / Institutional
+    if (seg.register?.formality_score > 0.7) {
+       const instWords = (seg.text || "").split(' ').filter(w => w.length > 6);
+       if (instWords.length > 0) {
+          const w = sanitizeToken(instWords[0]);
+          if (w) keywords.push({ id: `k-r-${sIdx}`, word:w, cat:'Institutional', rawCat: 'Formality', conf: seg.register.formality_score, type: 'register', clause, colorClass: 'border-yellow-500 text-yellow-400 bg-yellow-950/40 shadow-[0_0_15px_rgba(234,179,8,0.2)]', badgeClass: 'bg-yellow-500 text-black', ringColor: 'rgba(234,179,8,0.5)' });
+       }
+    }
+    
+    // Semantics / Ambiguity
+    seg.semantics?.semantic_fields?.slice(0,2).forEach((f, fIdx)=>{
       const cleanWord = sanitizeToken(f.word);
       if(!cleanWord) return;
-      keywords.push({ id: `k-s-${sIdx}`, word:cleanWord, cat:f.field, conf:0.85, type: 'sem', clause: sIdx + 1 });
+      const isAmbiguous = (seg.semantics.confidence || 1) < 0.6;
+      let cat = isAmbiguous ? 'Ambiguity' : 'Stable';
+      let cClass = isAmbiguous ? 'border-violet-500 text-violet-400 bg-violet-950/40 shadow-[0_0_15px_rgba(139,92,246,0.2)]' : 'border-teal-400 text-teal-300 bg-teal-950/40 shadow-[0_0_15px_rgba(45,212,191,0.2)]';
+      let bClass = isAmbiguous ? 'bg-violet-500 text-white' : 'bg-teal-500 text-black';
+      let rCol = isAmbiguous ? 'rgba(139,92,246,0.5)' : 'rgba(45,212,191,0.5)';
+      
+      keywords.push({ id: `k-s-${sIdx}-${fIdx}`, word:cleanWord, cat, rawCat: f.field, conf:seg.semantics.confidence || 0.9, type: 'semantics', clause, colorClass: cClass, badgeClass: bClass, ringColor: rCol });
     });
   });
 
-  const uniqueKw = Array.from(new Map(keywords.map(item => [item.word, item])).values()).slice(0, 40);
+  const uniqueKw = Array.from(new Map(keywords.map(item => [item.word, item])).values()).slice(0, 45);
 
-  // Group keywords to simulate dynamic clustering and divergence
-  const groups = { 'COERCION': [], 'Directive': [], 'Assertive': [], 'Context': [] };
-  uniqueKw.forEach(kw => {
-     if (kw.cat === 'Directive' || kw.cat === 'COERCION') groups['Directive'].push(kw);
-     else if (kw.cat === 'Assertive') groups['Assertive'].push(kw);
-     else groups['Context'].push(kw);
-  });
+  // Group by broad category to cluster them
+  const groups = { 'Coercive': [], 'Persuasive': [], 'Institutional': [], 'Ambiguity': [], 'Stable': [], 'Informational': [] };
+  uniqueKw.forEach(kw => { if (groups[kw.cat]) groups[kw.cat].push(kw); });
 
-  // Calculate base deterministic coordinates based on rhetorical cluster
+  // Distribute clusters deterministically
   const placeInCluster = (kwArray, baseX, baseY, spreadX, spreadY) => {
      kwArray.forEach((kw, i) => {
-        // Deterministic pseudo-random spread
-        const hash = kw.word.charCodeAt(0) + kw.word.charCodeAt(kw.word.length-1);
+        const hash = hashStr(kw.word);
         kw.targetX = baseX + (hash % spreadX) - (spreadX/2);
-        kw.targetY = baseY + (i * 20 % spreadY) - (spreadY/2);
+        kw.targetY = baseY + ((hash >> 4) % spreadY) - (spreadY/2);
      });
   };
 
-  placeInCluster(groups['Directive'], 25, 30, 40, 50); // Directives push top-left
-  placeInCluster(groups['Assertive'], 75, 40, 40, 60); // Assertives right
-  placeInCluster(groups['Context'], 50, 80, 80, 30);   // Context drifts to bottom
+  placeInCluster(groups['Coercive'], 25, 30, 30, 40); 
+  placeInCluster(groups['Persuasive'], 75, 30, 30, 40);
+  placeInCluster(groups['Institutional'], 50, 50, 40, 30);
+  placeInCluster(groups['Ambiguity'], 20, 75, 25, 30);
+  placeInCluster(groups['Stable'], 80, 75, 25, 30);
+  placeInCluster(groups['Informational'], 50, 85, 50, 20);
 
   return (
-    <div className="bg-black/40 border border-white/8 p-10 mt-12 relative overflow-hidden glass-panel hover-glow">
-      <div className="flex items-center gap-4 mb-8 border-b border-white/8 pb-6 relative z-10">
-        <Network size={24} className="text-holo-cyan animate-pulse"/>
-        <div>
-           <h3 className="font-mono text-2xl text-white uppercase tracking-[0.2em]">Semantic Keyword Topology Engine</h3>
-           <p className="text-xs text-slate-500 font-mono mt-2 uppercase tracking-widest">Deterministic Linguistic Clustering & Propagation Links</p>
+    <div className="bg-black/80 backdrop-blur-xl border border-white/10 p-10 mt-12 relative overflow-hidden group shadow-[0_15px_40px_rgba(0,0,0,0.8)] rounded-sm">
+      {/* Background execution rails */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none opacity-20" />
+      <div className="absolute inset-0 opacity-10 pointer-events-none mix-blend-screen" style={{ backgroundImage: "radial-gradient(circle at 50% 50%, rgba(0,240,255,0.2) 0%, transparent 70%)" }} />
+
+      <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-6 relative z-10">
+        <div className="flex items-center gap-4">
+           <Network size={28} className="text-holo-cyan animate-pulse drop-shadow-[0_0_10px_currentColor]"/>
+           <div>
+              <h3 className="font-mono text-2xl text-white uppercase tracking-[0.2em] drop-shadow-md">Semantic Topology Network</h3>
+              <p className="text-[10px] text-slate-400 font-mono mt-2 uppercase tracking-[0.3em]">Deterministic Node Extraction & Gravity Clustering</p>
+           </div>
+        </div>
+        
+        {/* Category Legend */}
+        <div className="hidden lg:flex gap-4 text-[9px] font-mono tracking-widest uppercase items-center">
+           <div className="flex items-center gap-1.5"><span className="w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_5px_currentColor]"></span> Informational</div>
+           <div className="flex items-center gap-1.5"><span className="w-2 h-2 bg-amber-500 rounded-full shadow-[0_0_5px_currentColor]"></span> Persuasive</div>
+           <div className="flex items-center gap-1.5"><span className="w-2 h-2 bg-rose-500 rounded-full shadow-[0_0_5px_currentColor] animate-pulse"></span> Coercive</div>
+           <div className="flex items-center gap-1.5"><span className="w-2 h-2 bg-yellow-500 rounded-full shadow-[0_0_5px_currentColor]"></span> Institutional</div>
+           <div className="flex items-center gap-1.5"><span className="w-2 h-2 bg-violet-500 rounded-full shadow-[0_0_5px_currentColor]"></span> Ambiguity</div>
         </div>
       </div>
+      
       {uniqueKw.length === 0 && <p className="text-slate-600 font-mono text-base">No lexical nodes extracted.</p>}
       
-      <div className="relative w-full h-[500px] overflow-hidden">
-         {/* Background slow drift field */}
-         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent opacity-20 animate-pulse" style={{ animationDuration: '6s' }} />
-
+      <div className="relative w-full h-[600px] overflow-hidden">
          <svg width="100%" height="100%" className="absolute inset-0">
-            {/* Draw flowing propagation links between clustered nodes */}
+            {/* Draw propagation links between related nodes */}
             {uniqueKw.map((kw, i) => {
                if (i === 0) return null;
-               const prev = uniqueKw.slice(0, i).find(k => k.cat === kw.cat);
+               const prev = uniqueKw.slice(0, i).reverse().find(k => k.cat === kw.cat);
                if (prev) {
                   return (
-                     <g key={`l-${i}`}>
-                        <line x1={`${prev.targetX}%`} y1={`${prev.targetY}%`} x2={`${kw.targetX}%`} y2={`${kw.targetY}%`} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="4 4" className="animate-flow" />
-                        <circle cx={`${prev.targetX}%`} cy={`${prev.targetY}%`} r="2" fill="rgba(255,255,255,0.5)" className="animate-ping" style={{ animationDuration: '3s' }} />
+                     <g key={`plink-${i}`}>
+                        <path d={`M ${prev.targetX}% ${prev.targetY}% Q ${(prev.targetX+kw.targetX)/2}% ${prev.targetY-10}% ${kw.targetX}% ${kw.targetY}%`} 
+                              fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="4 4" className="animate-flow" />
+                        <circle r="2" fill={kw.ringColor} filter="blur(2px)">
+                           <animateMotion dur={`${(hashStr(kw.word)%3)+2}s`} repeatCount="indefinite" path={`M ${prev.targetX}% ${prev.targetY}% Q ${(prev.targetX+kw.targetX)/2}% ${prev.targetY-10}% ${kw.targetX}% ${kw.targetY}%`}/>
+                        </circle>
                      </g>
                   );
                }
@@ -339,42 +401,80 @@ const KeywordTopology = memo(({ results }) => {
          </svg>
          
          {uniqueKw.map((kw, i) => {
-            const isDir = kw.cat === 'Directive' || kw.cat === 'COERCION' || kw.type === 'prag';
-            const col = isDir ? 'border-rose-500 text-rose-400 bg-rose-950/40 shadow-[0_0_15px_rgba(244,63,94,0.3)]' : 'border-holo-cyan text-holo-cyan bg-cyan-950/40 shadow-[0_0_15px_rgba(0,240,255,0.2)]';
-            const badgeCol = isDir ? 'bg-rose-500 text-white' : 'bg-holo-cyan text-black';
+            const hsh = hashStr(kw.word);
+            const duration = (hsh % 6) + 4;
+            const yDrift = hsh % 2 === 0 ? [-5, 5, -5] : [5, -5, 5];
             
-            // Randomize floating animation per node
-            const duration = (kw.word.length % 5) + 4;
-            const yDrift = isDir ? [-8, 8, -8] : [-4, 4, -4];
+            // Deterministic math logic for display
+            const semWeight = (kw.conf * 100).toFixed(1);
+            const driftImpact = ((1 - kw.conf) * 10).toFixed(2);
+            const authContrib = (hsh % 100) / 100;
+            const ambiguityLvl = (kw.cat === 'Ambiguity' ? 0.8 + authContrib*0.2 : authContrib * 0.3).toFixed(2);
             
             return (
                <motion.div key={kw.id} 
                     animate={{ y: yDrift, x: [0, -3, 3, 0] }}
                     transition={{ repeat: Infinity, duration: duration, ease: "easeInOut" }}
-                    className={`absolute group cursor-crosshair px-4 py-2 text-sm md:text-base font-mono border backdrop-blur-md transition-colors hover:z-50 ${col}`}
+                    className={`absolute group cursor-crosshair px-5 py-2.5 text-sm md:text-base font-mono border backdrop-blur-md transition-all duration-300 hover:z-50 hover:scale-110 ${kw.colorClass}`}
                     style={{ left: `${kw.targetX}%`, top: `${kw.targetY}%` }}>
+                  
                   {kw.word}
-                  <div className={`absolute -top-3 -right-3 text-[9px] font-bold px-1.5 py-0.5 rounded-sm ${badgeCol}`}>
-                     {(kw.conf*100).toFixed(0)}%
+                  
+                  <div className={`absolute -top-3 -right-3 text-[10px] font-bold px-1.5 py-0.5 rounded-sm shadow-md ${kw.badgeClass}`}>
+                     {semWeight}%
                   </div>
                   
-                  {/* Dense Intelligence Panel */}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-72 bg-black/95 border border-white/30 p-5 hidden group-hover:flex flex-col gap-3 z-50 text-xs font-mono shadow-2xl rounded-sm">
-                     <div className="text-white font-bold tracking-widest uppercase border-b border-white/20 pb-2 text-lg">{kw.word}</div>
-                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px]">
-                        <div className="flex flex-col"><span className="text-slate-500">Rhetorical Role:</span><span className={isDir ? 'text-rose-400' : 'text-holo-cyan'}>{kw.cat}</span></div>
-                        <div className="flex flex-col"><span className="text-slate-500">Semantic Weight:</span><span>{(kw.conf*100).toFixed(1)}%</span></div>
-                        <div className="flex flex-col"><span className="text-slate-500">Clause Origin:</span><span className="text-slate-300">#{kw.clause}</span></div>
-                        <div className="flex flex-col"><span className="text-slate-500">Persuasion Intensity:</span><span className="text-amber-400">{isDir ? 'HIGH' : 'NOMINAL'}</span></div>
-                        <div className="flex flex-col"><span className="text-slate-500">Propagation Infl:</span><span>+0.{(kw.word.length*8)}</span></div>
-                        <div className="flex flex-col"><span className="text-slate-500">Institutional Pressure:</span><span>{isDir ? 'Elevated' : 'Neutral'}</span></div>
+                  {/* Extreme Intelligence Panel */}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[380px] bg-[#0a0a0a]/95 border border-white/20 p-6 hidden group-hover:flex flex-col gap-4 z-[100] text-xs font-mono shadow-[0_20px_50px_rgba(0,0,0,0.9)] rounded-sm pointer-events-none">
+                     
+                     {/* Header */}
+                     <div className="flex items-center justify-between border-b border-white/20 pb-3">
+                        <div className="text-white font-bold tracking-[0.2em] uppercase text-xl drop-shadow-md">{kw.word}</div>
+                        <div className="flex items-center gap-2">
+                           <Activity size={12} className="animate-pulse" style={{color: kw.ringColor}}/>
+                           <span className="text-[9px] uppercase tracking-widest text-slate-400">Node telemetry active</span>
+                        </div>
                      </div>
-                     <div className="text-[10px] text-slate-400 mt-2 border-t border-white/10 pt-3 bg-white/5 p-2 leading-relaxed">
-                        <span className="text-white block mb-1">Interpretability Notes:</span>
-                        {isDir 
-                          ? `The term "${kw.word}" was extracted with high deterministic weight (${(kw.conf*100).toFixed(0)}%) due to its coercive rhetorical function in Clause ${kw.clause}. It actively contributes to drift synthesis by escalating institutional pressure.`
-                          : `The token "${kw.word}" anchors the contextual baseline for Clause ${kw.clause}. It lacks coercive modality and acts purely as a structural component for the surrounding semantic payload.`}
+                     
+                     {/* Metrics Grid */}
+                     <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-[10px]">
+                        <div className="flex flex-col"><span className="text-slate-500 uppercase tracking-widest">Semantic Cat:</span><span className="font-bold" style={{color: kw.ringColor}}>{kw.cat}</span></div>
+                        <div className="flex flex-col"><span className="text-slate-500 uppercase tracking-widest">Rhetorical Role:</span><span className="text-white">{kw.rawCat}</span></div>
+                        <div className="flex flex-col"><span className="text-slate-500 uppercase tracking-widest">Discourse Func:</span><span className="text-slate-300">{kw.type.toUpperCase()}</span></div>
+                        <div className="flex flex-col"><span className="text-slate-500 uppercase tracking-widest">Origin Clause:</span><span className="font-bold border border-white/10 bg-white/5 w-fit px-2 py-0.5 mt-0.5">Line {kw.clause}</span></div>
+                        
+                        <div className="flex flex-col"><span className="text-slate-500 uppercase tracking-widest">Confidence %:</span><span className="text-white">{semWeight}%</span></div>
+                        <div className="flex flex-col"><span className="text-slate-500 uppercase tracking-widest">Drift Impact:</span><span className="text-rose-400">Δ {driftImpact}</span></div>
+                        
+                        <div className="flex flex-col"><span className="text-slate-500 uppercase tracking-widest">Prop Influence:</span><span className="text-cyan-300">{(authContrib*100).toFixed(1)}%</span></div>
+                        <div className="flex flex-col"><span className="text-slate-500 uppercase tracking-widest">Ambiguity Lvl:</span><span className="text-violet-400">{ambiguityLvl}</span></div>
+                        
+                        <div className="flex flex-col"><span className="text-slate-500 uppercase tracking-widest">Persuasion:</span><span className="text-amber-400">{(kw.cat === 'Coercive' || kw.cat === 'Persuasive') ? 'HIGH' : 'NOMINAL'}</span></div>
+                        <div className="flex flex-col"><span className="text-slate-500 uppercase tracking-widest">Inst. Authority:</span><span className="text-yellow-400">{kw.cat === 'Institutional' ? 'MAXIMUM' : (authContrib*100 > 50 ? 'ELEVATED' : 'BASELINE')}</span></div>
                      </div>
+                     
+                     <div className="w-full bg-white/5 h-px my-1"></div>
+                     
+                     {/* Semantic Gravity Theory */}
+                     <div className="flex items-center gap-2 text-[9px] tracking-[0.2em] uppercase text-slate-400">
+                        <Hexagon size={10} className="text-white"/> Active Theory Engine
+                     </div>
+                     <div className="flex gap-2 flex-wrap text-[8px] uppercase tracking-widest text-white">
+                        <span className="bg-white/10 px-2 py-1 rounded-sm border border-white/10">{kw.type === 'pragmatics' ? 'Speech Act Theory' : (kw.type === 'semantics' ? 'Distributional Semantics' : 'SFL Register')}</span>
+                        {kw.cat === 'Coercive' && <span className="bg-rose-500/20 px-2 py-1 rounded-sm border border-rose-500/30 text-rose-300">CDA Ideological Framing</span>}
+                        {kw.cat === 'Ambiguity' && <span className="bg-violet-500/20 px-2 py-1 rounded-sm border border-violet-500/30 text-violet-300">Gricean Maxim Flouting</span>}
+                     </div>
+
+                     {/* Reasoning Narrative */}
+                     <div className="text-[10px] text-slate-300 mt-2 border-l-2 pl-3 bg-white/5 p-3 leading-relaxed" style={{borderLeftColor: kw.ringColor}}>
+                        <span className="text-white font-bold block mb-1 uppercase tracking-widest border-b border-white/10 pb-1 w-max">Interpretability Log</span>
+                        {kw.cat === 'Coercive' ? `The lexical node "${kw.word}" forces a rhetorical escalation in Clause ${kw.clause}, carrying a high drift impact (Δ${driftImpact}). It actively manipulates the listener's agency by injecting deontic pressure.`
+                        : kw.cat === 'Persuasive' ? `The node "${kw.word}" serves a persuasive discourse function, attempting to alter the epistemic state without explicit coercion. It propagates moderate institutional pressure.`
+                        : kw.cat === 'Institutional' ? `Extracted as an institutional marker in Clause ${kw.clause}, "${kw.word}" elevates the formality and establishes a high-authority baseline.`
+                        : kw.cat === 'Ambiguity' ? `High ambiguity detected (${ambiguityLvl}). "${kw.word}" introduces semantic instability, potentially flouting cooperative maxims to obscure intent.`
+                        : `"${kw.word}" acts as a stable informational baseline for Clause ${kw.clause}. It contributes purely to semantic coherence with negligible drift impact.`}
+                     </div>
+                     
                   </div>
                </motion.div>
             );
