@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Globe, ShieldAlert, FileText, Download, RotateCcw, ThumbsUp, AlertTriangle, Network, SearchCode, Binary, BookOpen, Save, Layers } from 'lucide-react';
+import { Play, Globe, ShieldAlert, FileText, Download, RotateCcw, ThumbsUp, AlertTriangle, Network, SearchCode, Binary, BookOpen, Save, Layers, Activity } from 'lucide-react';
 import LiveAnalysisDashboard from './components/LiveAnalysisDashboard';
 import EvidenceExplorer from './components/EvidenceExplorer';
 import AgentPipeline from './components/AgentPipeline';
