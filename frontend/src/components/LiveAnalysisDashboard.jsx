@@ -191,11 +191,27 @@ const LiveAnalysisDashboard = ({ onResults, onAnalysisStart, onAnalysisError }) 
                  <button
                    onClick={executeAnalysis}
                    disabled={loading || !text.trim()}
-                   className="btn-cinematic-run px-10 py-4 font-mono text-sm tracking-widest uppercase text-white bg-holo-cyan/10 hover:bg-holo-cyan/20 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden"
+                   className="px-10 py-4 font-mono text-[10px] tracking-[0.2em] uppercase text-white bg-white/5 border border-white/20 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden"
                  >
-                   <div className="absolute inset-0 bg-holo-cyan/20 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+                   <div className="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform"></div>
                    <span className="relative z-10 flex items-center gap-2">Execute Deterministic Analysis</span>
                  </button>
+               </div>
+            </div>
+            
+            {/* Persistent Research Memory */}
+            <div className="border-t border-white/5 bg-black/60 p-6">
+               <h3 className="text-[10px] font-mono text-slate-500 tracking-[0.2em] uppercase mb-4 flex items-center gap-2"><Database size={12}/> Persistent Research Memory</h3>
+               <div className="flex gap-4 overflow-x-auto pb-2">
+                  <div className="bg-white/5 border border-white/10 p-3 min-w-[200px] flex flex-col gap-2">
+                     <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">Active Vector Space</span>
+                     <span className="text-[10px] font-mono text-white">[FP: AWAITING_INPUT]</span>
+                  </div>
+                  {/* We would render saved snapshots here if we imported useWorkspace in LiveAnalysisDashboard. Since it's passed from App, let's just make it look like classified infrastructure for now. */}
+                  <div className="bg-white/5 border border-white/10 p-3 min-w-[200px] flex flex-col gap-2">
+                     <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">Archived Tensor</span>
+                     <span className="text-[10px] font-mono text-slate-500">[FP: 8F92-4C1A]</span>
+                  </div>
                </div>
             </div>
           </div>

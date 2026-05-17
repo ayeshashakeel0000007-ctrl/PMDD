@@ -26,7 +26,6 @@
   
   .hover-glow:hover {
     @apply bg-white/5 border-white/20;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
   }
 }
 

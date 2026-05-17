@@ -1,8 +1,54 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronRight, Search, Activity, TrendingUp, Link as LinkIcon, MessageSquareWarning, Flag, ShieldAlert, Check } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search, Activity, TrendingUp, Link as LinkIcon, MessageSquareWarning, Flag, ShieldAlert, Check, GitBranch, Share2 } from 'lucide-react';
 import { useResonance } from '../context/SemanticResonanceContext';
 import { useWorkspace } from '../context/ResearchWorkspaceContext';
+
+const ClauseLineageGraph = ({ currentIndex, totalLength, isHighDrift }) => {
+  // Generate a mock lineage path based on the current clause index
+  const getLineageNodes = () => {
+     let nodes = [];
+     if (currentIndex > 2) nodes.push({ idx: currentIndex - 2, text: "Institutional seed", type: 'origin' });
+     if (currentIndex > 0) nodes.push({ idx: currentIndex - 1, text: isHighDrift ? "Escalation acceleration" : "Linear propagation", type: 'node' });
+     nodes.push({ idx: currentIndex, text: isHighDrift ? "Ambiguity destabilization" : "Semantic stabilization", type: 'target', active: true });
+     return nodes;
+  };
+  
+  const nodes = getLineageNodes();
+
+  return (
+    <div className="w-full bg-black border border-white/5 p-4 relative overflow-hidden mb-6">
+       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMSkiLz48L3N2Zz4=')] opacity-50 pointer-events-none"></div>
+       
+       <div className="flex items-center gap-2 mb-4 relative z-10 border-b border-white/5 pb-2">
+          <GitBranch size={12} className="text-slate-500" />
+          <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-slate-500">Semantic Lineage Map</span>
+       </div>
+
+       <div className="flex flex-col relative z-10 pl-2">
+          {nodes.map((node, i) => (
+             <div key={i} className="flex items-start group">
+                <div className="flex flex-col items-center mr-4">
+                   <div className={`w-3 h-3 rounded-full flex items-center justify-center ${node.active ? (isHighDrift ? 'bg-rose-500' : 'bg-white') : 'bg-white/10'} border border-white/20 z-10 relative`}>
+                      {node.active && <div className="w-1 h-1 bg-black rounded-full" />}
+                   </div>
+                   {i < nodes.length - 1 && (
+                      <div className={`w-[1px] h-6 ${isHighDrift ? 'bg-rose-500/30 border-l border-dashed border-rose-500/50' : 'bg-white/10'}`}></div>
+                   )}
+                </div>
+                <div className={`flex flex-col justify-center h-4 mt-[-2px] ${node.active ? 'opacity-100' : 'opacity-50 group-hover:opacity-100'} transition-opacity`}>
+                   <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest bg-white/5 px-1 rounded-sm border border-white/5">Clause {node.idx + 1}</span>
+                      <span className="text-[9px] font-mono text-slate-300">→</span>
+                      <span className={`text-[10px] font-mono ${node.active && isHighDrift ? 'text-rose-400' : node.active ? 'text-white' : 'text-slate-400'}`}>{node.text}</span>
+                   </div>
+                </div>
+             </div>
+          ))}
+       </div>
+    </div>
+  );
+};
 
 const EvidenceExplorer = ({ results }) => {
   const [expandedSeg, setExpandedSeg] = useState(null);
@@ -12,6 +58,8 @@ const EvidenceExplorer = ({ results }) => {
 
   if (!results || !results.segments) return null;
 
+  const isHighDrift = resonanceState.intensityMultiplier > 1.5;
+
   const handleSaveAnnotation = (idx, flagType) => {
      addAnnotation(idx, { text: annotationInput, flag: flagType });
      setAnnotationInput("");
@@ -19,17 +67,17 @@ const EvidenceExplorer = ({ results }) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 mt-12 relative">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-16 bg-gradient-to-b from-holo-cyan to-transparent opacity-50"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-16 bg-gradient-to-b from-white/20 to-transparent opacity-50"></div>
       <div className="mb-12 flex flex-col items-center">
-         <div className="flex items-center gap-3 mb-2 text-holo-cyan border border-holo-cyan/30 px-4 py-1 rounded-sm bg-holo-cyan/5">
-            <Search size={14} />
-            <span className="font-mono text-[10px] tracking-[0.2em] uppercase">Collaborative Interpretability Laboratory</span>
+         <div className="flex items-center gap-3 mb-2 text-slate-500 border border-white/10 px-4 py-1 rounded-sm bg-black/40">
+            <Search size={12} />
+            <span className="font-mono text-[9px] tracking-[0.2em] uppercase">Collaborative Interpretability Laboratory</span>
          </div>
-         <h2 className="text-3xl font-light text-white tracking-[0.1em] uppercase text-center">Semantic Memory & Annotation</h2>
+         <h2 className="text-xl font-mono text-white tracking-[0.1em] uppercase text-center">Semantic Memory & Annotation</h2>
       </div>
 
-      <div className="flex flex-col gap-6 relative z-10">
-        <div className="absolute left-8 top-12 bottom-12 w-px bg-white/10 z-0"></div>
+      <div className="flex flex-col gap-4 relative z-10">
+        <div className="absolute left-8 top-12 bottom-12 w-px bg-white/5 z-0 border-l border-dashed border-white/10"></div>
 
         {results.segments.map((seg, idx) => {
           const isExpanded = expandedSeg === idx;
@@ -40,46 +88,46 @@ const EvidenceExplorer = ({ results }) => {
           
           const conf = pragmatics.confidence || 1.0;
           let confColor = "text-white";
-          let borderColor = ann ? "border-plasma-violet/50" : "border-white/10";
-          let bgGlow = ann ? "hover:bg-plasma-violet/5" : "hover:bg-white/5";
+          let borderColor = ann ? "border-white/30" : "border-white/5";
+          let bgGlow = ann ? "bg-white/5" : "hover:bg-white/5";
           
           const driftContribution = ((1 - conf) * 100).toFixed(1);
           const causalityTarget = idx > 0 && conf < 0.7 ? idx - 1 : null;
 
           if (conf < 0.6) {
             confColor = "text-rose-400";
-            borderColor = ann ? "border-plasma-violet/80" : "border-rose-500/50";
+            borderColor = ann ? "border-rose-500/50" : "border-rose-500/20";
           } else if (conf < 0.8) {
             confColor = "text-amber-400";
           }
 
           if (isExpanded) {
-             borderColor = ann ? "border-plasma-violet shadow-[0_0_20px_rgba(176,38,255,0.1)]" : "border-holo-cyan shadow-[0_0_20px_rgba(0,240,255,0.1)]";
+             borderColor = ann ? "border-white/50 bg-white/5" : "border-white/30 bg-black/80";
           }
 
           return (
             <div key={idx} className="relative z-10 flex gap-6">
-              <div className="w-6 h-6 rounded-sm bg-obsidian border border-white/20 flex items-center justify-center shrink-0 mt-6 relative z-10">
-                 {ann ? <Flag size={10} className="text-plasma-violet" /> : <div className={`w-2 h-2 ${conf < 0.6 ? 'bg-rose-500' : 'bg-white/50'}`}></div>}
+              <div className="w-5 h-5 bg-black border border-white/20 flex items-center justify-center shrink-0 mt-6 relative z-10">
+                 {ann ? <Flag size={8} className="text-white" /> : <div className={`w-[2px] h-[2px] ${conf < 0.6 ? 'bg-rose-500' : 'bg-white/50'}`}></div>}
               </div>
 
               {causalityTarget !== null && (
-                 <div className="absolute left-3 top-[-30px] w-6 h-[40px] border-l-2 border-b-2 border-rose-500/50 rounded-bl-lg z-0"></div>
+                 <div className="absolute left-[11px] top-[-30px] w-6 h-[40px] border-l border-b border-rose-500/30 border-dashed z-0"></div>
               )}
 
-              <motion.div className={`flex-1 bg-obsidian/90 border transition-all duration-300 ${borderColor} ${bgGlow}`}>
-                <button onClick={() => { setExpandedSeg(isExpanded ? null : idx); setAnnotationInput(""); }} className="w-full px-8 py-6 flex items-center justify-between text-left group">
+              <motion.div className={`flex-1 bg-black/60 border transition-colors duration-300 ${borderColor} ${bgGlow}`}>
+                <button onClick={() => { setExpandedSeg(isExpanded ? null : idx); setAnnotationInput(""); }} className="w-full px-6 py-5 flex items-center justify-between text-left group">
                   <div className="flex items-center space-x-6 relative">
-                    <div className="flex flex-col">
-                       <span className="text-[10px] font-mono text-slate-500 tracking-[0.2em]">MEM.CELL</span>
-                       <span className="text-white font-mono text-lg">{idx + 1}</span>
+                    <div className="flex flex-col items-center">
+                       <span className="text-[8px] font-mono text-slate-500 tracking-[0.2em]">MEM.CELL</span>
+                       <span className="text-white font-mono text-sm">{idx + 1}</span>
                     </div>
                     <div className="w-px h-8 bg-white/10"></div>
                     <div className="flex flex-col">
-                       <p className={`text-sm md:text-base font-serif italic ${confColor}`}>"{seg.text}"</p>
+                       <p className={`text-xs md:text-sm font-mono tracking-wide ${confColor}`}>"{seg.text}"</p>
                        {ann && (
-                          <div className="flex items-center gap-2 mt-2 text-[10px] font-mono text-plasma-violet tracking-widest uppercase bg-plasma-violet/10 px-2 py-1 rounded border border-plasma-violet/30 w-fit">
-                             <MessageSquareWarning size={10} /> {ann.flag} | {ann.text}
+                          <div className="flex items-center gap-2 mt-2 text-[8px] font-mono text-white tracking-widest uppercase bg-white/10 px-2 py-1 border border-white/20 w-fit">
+                             <MessageSquareWarning size={8} /> {ann.flag} | {ann.text}
                           </div>
                        )}
                     </div>
@@ -87,54 +135,55 @@ const EvidenceExplorer = ({ results }) => {
                   <div className="flex items-center space-x-6">
                     {pragmatics.confidence && (
                       <div className="flex flex-col items-end">
-                         <span className={`hidden sm:flex items-center text-[10px] font-mono tracking-widest px-3 py-1 rounded-sm border ${conf < 0.6 ? 'text-rose-400 bg-rose-900/30 border-rose-500/30' : 'text-white bg-white/10 border-white/30'}`}>
-                           <Activity size={12} className={`mr-2 ${conf < 0.6 ? 'animate-pulse' : ''}`} />
+                         <span className={`hidden sm:flex items-center text-[9px] font-mono tracking-widest px-2 py-1 border ${conf < 0.6 ? 'text-rose-400 bg-rose-500/5 border-rose-500/20' : 'text-slate-300 bg-white/5 border-white/10'}`}>
+                           <Activity size={10} className={`mr-2 ${conf < 0.6 ? 'animate-pulse' : ''}`} />
                            STABILITY: {(pragmatics.confidence * 100).toFixed(0)}%
                          </span>
-                         <span className="text-[8px] font-mono text-slate-500 tracking-widest mt-1 uppercase">Entropy: {((1-conf)*10).toFixed(2)} | Var: ±{(Math.random() * 0.05).toFixed(3)}</span>
+                         <span className="text-[7px] font-mono text-slate-500 tracking-widest mt-1 uppercase">Entropy: {((1-conf)*10).toFixed(2)} | Var: ±{(Math.random() * 0.05).toFixed(3)}</span>
                       </div>
                     )}
-                    {isExpanded ? <ChevronDown size={20} className="text-white" /> : <ChevronRight size={20} className="text-slate-500 group-hover:text-white transition-colors" />}
+                    {isExpanded ? <ChevronDown size={14} className="text-white" /> : <ChevronRight size={14} className="text-slate-600 group-hover:text-white transition-colors" />}
                   </div>
                 </button>
 
                 <AnimatePresence>
                    {isExpanded && (
-                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="px-8 py-8 bg-black/50 border-t border-white/5 relative overflow-hidden flex flex-col gap-8">
+                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="px-6 py-6 bg-black border-t border-white/10 relative overflow-hidden flex flex-col">
                        
-                       {/* Causal Engine Trace */}
-                       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                          <div className="md:col-span-3 border-b border-white/5 pb-6">
+                       <ClauseLineageGraph currentIndex={idx} totalLength={results.segments.length} isHighDrift={isHighDrift} />
+
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <div className="md:col-span-3 border-b border-white/5 pb-4">
                              <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-2">
-                                    <TrendingUp size={14} className="text-slate-400"/>
-                                    <span className="text-[10px] font-mono text-white uppercase tracking-widest">Causal Propagation Trace</span>
+                                    <Share2 size={12} className="text-slate-500"/>
+                                    <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Semantic Propagation Trace</span>
                                 </div>
                                 {causalityTarget !== null && (
-                                   <div className="flex items-center gap-2 bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-1 rounded-sm text-[10px] font-mono uppercase tracking-widest">
-                                      <LinkIcon size={10} /> Instability inherited from Clause {causalityTarget + 1}
+                                   <div className="flex items-center gap-2 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-1 text-[8px] font-mono uppercase tracking-widest">
+                                      <LinkIcon size={8} /> Instability inherited from Clause {causalityTarget + 1}
                                    </div>
                                 )}
                              </div>
-                             <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest bg-white/5 p-4 border border-white/10 flex flex-col gap-2">
-                                <div className="flex justify-between"><span>[MATH] Entropy Bound</span><span className="text-holo-cyan">{((1 - conf) * 10).toFixed(3)} bits</span></div>
+                             <div className="text-[9px] font-mono text-slate-400 uppercase tracking-widest bg-white/5 p-3 border border-white/5 flex flex-col gap-2">
+                                <div className="flex justify-between"><span>[MATH] Entropy Bound</span><span className="text-white">{((1 - conf) * 10).toFixed(3)} bits</span></div>
                                 <div className="flex justify-between border-t border-white/5 pt-2"><span>[SYNC] Semantic Displacement</span><span className="text-white">Δ {driftContribution}% from origin</span></div>
                              </div>
                           </div>
 
                           {/* Pragmatics Column */}
                           {pragmatics.speech_acts && (
-                            <div className="space-y-4">
-                              <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
-                                 <h4 className="text-[10px] font-mono text-holo-cyan uppercase tracking-[0.2em]">Pragmatic Derivation</h4>
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
+                                 <h4 className="text-[9px] font-mono text-white uppercase tracking-[0.2em]">Pragmatic Derivation</h4>
                               </div>
                               {pragmatics.speech_acts.map((act, i) => (
-                                <div key={i} className="bg-black/80 p-3 border border-white/10">
+                                <div key={i} className="bg-white/5 p-2 border border-white/5">
                                   <div className="flex justify-between items-center mb-2">
-                                    <span className="text-[10px] text-white font-mono tracking-widest uppercase">{act.category}</span>
-                                    <span className="text-[10px] font-mono text-holo-cyan">{(act.confidence * 100).toFixed(1)}%</span>
+                                    <span className="text-[9px] text-slate-300 font-mono tracking-widest uppercase">{act.category}</span>
+                                    <span className="text-[8px] font-mono text-white">{(act.confidence * 100).toFixed(1)}%</span>
                                   </div>
-                                  <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Token Vector: <span className="text-white">"{act.evidence}"</span></p>
+                                  <p className="text-[8px] text-slate-500 font-mono uppercase tracking-widest">Token: <span className="text-slate-300">"{act.evidence}"</span></p>
                                 </div>
                               ))}
                             </div>
@@ -142,17 +191,17 @@ const EvidenceExplorer = ({ results }) => {
 
                           {/* Semantics Column */}
                           {semantics.semantic_fields && (
-                            <div className="space-y-4">
-                              <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
-                                 <h4 className="text-[10px] font-mono text-white uppercase tracking-[0.2em]">Semantic Tensor</h4>
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
+                                 <h4 className="text-[9px] font-mono text-white uppercase tracking-[0.2em]">Semantic Tensor</h4>
                               </div>
                               {semantics.semantic_fields.map((field, i) => (
-                                <div key={i} className="bg-black/80 p-3 border border-white/10">
+                                <div key={i} className="bg-white/5 p-2 border border-white/5">
                                   <div className="flex justify-between items-center mb-2">
-                                     <span className="text-[10px] text-white font-mono tracking-widest uppercase">"{field.word}"</span>
-                                     <span className="text-[8px] font-mono text-slate-400 px-1 border border-slate-600 uppercase">{field.field}</span>
+                                     <span className="text-[9px] text-slate-300 font-mono tracking-widest uppercase">"{field.word}"</span>
+                                     <span className="text-[7px] font-mono text-slate-500 px-1 border border-white/10 uppercase">{field.field}</span>
                                   </div>
-                                  <p className="text-[10px] text-slate-500 font-mono mt-1 tracking-widest uppercase">Map: {field.contextual_meaning}</p>
+                                  <p className="text-[8px] text-slate-500 font-mono mt-1 tracking-widest uppercase">Map: {field.contextual_meaning}</p>
                                 </div>
                               ))}
                             </div>
@@ -160,17 +209,17 @@ const EvidenceExplorer = ({ results }) => {
 
                           {/* Register Column */}
                           {register.formality_score !== undefined && (
-                            <div className="space-y-4">
-                              <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
-                                 <h4 className="text-[10px] font-mono text-slate-400 uppercase tracking-[0.2em]">Institutional Weight</h4>
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
+                                 <h4 className="text-[9px] font-mono text-slate-400 uppercase tracking-[0.2em]">Institutional Weight</h4>
                               </div>
-                              <div className="bg-black/80 p-3 border border-white/10">
-                                <div className="flex justify-between text-[10px] font-mono text-slate-500 mb-2 tracking-widest uppercase">
+                              <div className="bg-white/5 p-2 border border-white/5">
+                                <div className="flex justify-between text-[8px] font-mono text-slate-500 mb-2 tracking-widest uppercase">
                                    <span>Formality Tensor</span>
                                    <span className="text-white">{(register.formality_score * 100).toFixed(1)}%</span>
                                 </div>
-                                <div className="w-full h-px bg-white/10 mt-3 relative">
-                                   <motion.div initial={{ width: 0 }} animate={{ width: `${register.formality_score * 100}%` }} transition={{ duration: 1 }} className="absolute top-[-1px] h-[3px] bg-white"></motion.div>
+                                <div className="w-full h-px bg-white/10 mt-2 relative">
+                                   <motion.div initial={{ width: 0 }} animate={{ width: `${register.formality_score * 100}%` }} transition={{ duration: 1 }} className="absolute top-[-1px] h-[2px] bg-white"></motion.div>
                                 </div>
                               </div>
                             </div>
@@ -178,32 +227,31 @@ const EvidenceExplorer = ({ results }) => {
                        </div>
                        
                        {/* Human Annotation Layer */}
-                       <div className="border-t border-plasma-violet/30 pt-6 mt-4 relative">
-                          <div className="absolute top-0 right-0 p-4 opacity-5 text-plasma-violet"><MessageSquareWarning size={80}/></div>
-                          <h4 className="text-[10px] font-mono text-plasma-violet uppercase tracking-widest mb-4">Scientific Review & Annotation</h4>
+                       <div className="border-t border-white/10 pt-4 mt-6 relative">
+                          <h4 className="text-[9px] font-mono text-slate-400 uppercase tracking-widest mb-3">Scientific Review & Annotation</h4>
                           
                           {ann ? (
-                             <div className="bg-plasma-violet/5 border border-plasma-violet/20 p-4 flex justify-between items-center z-10 relative">
+                             <div className="bg-white/5 border border-white/10 p-3 flex justify-between items-center z-10 relative">
                                 <div className="flex flex-col gap-1">
-                                   <span className="text-[10px] font-mono text-white tracking-widest uppercase">[{ann.flag}]</span>
-                                   <span className="text-xs font-serif italic text-slate-300">"{ann.text}"</span>
-                                   <span className="text-[8px] font-mono text-slate-500 mt-2">Logged: {new Date(ann.timestamp).toLocaleString()}</span>
+                                   <span className="text-[8px] font-mono text-slate-300 tracking-widest uppercase">[{ann.flag}]</span>
+                                   <span className="text-[10px] font-mono text-white">"{ann.text}"</span>
+                                   <span className="text-[7px] font-mono text-slate-500 mt-1">Logged: {new Date(ann.timestamp).toLocaleString()}</span>
                                 </div>
-                                <button onClick={() => removeAnnotation(idx)} className="text-xs font-mono text-rose-400 hover:text-rose-300 border border-rose-500/30 px-3 py-1 rounded transition-colors">REVOKE ANNOTATION</button>
+                                <button onClick={() => removeAnnotation(idx)} className="text-[8px] font-mono text-rose-400 hover:text-rose-300 border border-rose-500/20 px-2 py-1 transition-colors">REVOKE ANNOTATION</button>
                              </div>
                           ) : (
-                             <div className="flex flex-col gap-3 z-10 relative">
+                             <div className="flex flex-col gap-2 z-10 relative">
                                 <input 
                                    type="text" 
                                    value={annotationInput}
                                    onChange={(e) => setAnnotationInput(e.target.value)}
                                    placeholder="Add reviewer notes, dispute reasoning, or semantic overrides..." 
-                                   className="w-full bg-obsidian border border-white/20 p-3 text-sm font-serif italic text-white placeholder-slate-600 focus:outline-none focus:border-plasma-violet transition-colors"
+                                   className="w-full bg-black border border-white/10 p-2 text-[10px] font-mono text-slate-300 placeholder-slate-600 focus:outline-none focus:border-white/30 transition-colors"
                                 />
                                 <div className="flex gap-2">
-                                   <button onClick={() => handleSaveAnnotation(idx, 'THEORY DISPUTE')} disabled={!annotationInput} className="disabled:opacity-50 flex items-center gap-2 text-[10px] font-mono text-white uppercase tracking-widest bg-plasma-violet/20 border border-plasma-violet/50 px-4 py-2 hover:bg-plasma-violet/40 transition-colors"><ShieldAlert size={12}/> FLAG DISPUTE</button>
-                                   <button onClick={() => handleSaveAnnotation(idx, 'FALSE POSITIVE')} disabled={!annotationInput} className="disabled:opacity-50 flex items-center gap-2 text-[10px] font-mono text-white uppercase tracking-widest bg-rose-500/20 border border-rose-500/50 px-4 py-2 hover:bg-rose-500/40 transition-colors"><Flag size={12}/> FALSE POSITIVE</button>
-                                   <button onClick={() => handleSaveAnnotation(idx, 'VERIFIED')} disabled={!annotationInput} className="disabled:opacity-50 flex items-center gap-2 text-[10px] font-mono text-white uppercase tracking-widest bg-semantic-teal/20 border border-semantic-teal/50 px-4 py-2 hover:bg-semantic-teal/40 transition-colors"><Check size={12}/> VERIFY TRACE</button>
+                                   <button onClick={() => handleSaveAnnotation(idx, 'THEORY DISPUTE')} disabled={!annotationInput} className="disabled:opacity-50 flex items-center gap-2 text-[8px] font-mono text-white uppercase tracking-widest bg-white/5 border border-white/10 px-3 py-2 hover:bg-white/10 transition-colors"><ShieldAlert size={10}/> FLAG DISPUTE</button>
+                                   <button onClick={() => handleSaveAnnotation(idx, 'FALSE POSITIVE')} disabled={!annotationInput} className="disabled:opacity-50 flex items-center gap-2 text-[8px] font-mono text-white uppercase tracking-widest bg-rose-500/10 border border-rose-500/30 px-3 py-2 hover:bg-rose-500/20 transition-colors"><Flag size={10}/> FALSE POSITIVE</button>
+                                   <button onClick={() => handleSaveAnnotation(idx, 'VERIFIED')} disabled={!annotationInput} className="disabled:opacity-50 flex items-center gap-2 text-[8px] font-mono text-white uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 hover:bg-emerald-500/20 transition-colors"><Check size={10}/> VERIFY TRACE</button>
                                 </div>
                              </div>
                           )}
