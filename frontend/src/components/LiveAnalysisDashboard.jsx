@@ -16,7 +16,7 @@ const IngestionDiagnostics = ({ onComplete }) => {
 
   useEffect(() => {
     if (stage < stages.length - 1) {
-      const timer = setTimeout(() => setStage(s => s + 1), 600 + Math.random() * 800);
+      const timer = setTimeout(() => setStage(s => s + 1), 950);
       return () => clearTimeout(timer);
     } else {
       const timer = setTimeout(onComplete, 1000);

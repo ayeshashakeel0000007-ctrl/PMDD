@@ -4,13 +4,16 @@ import './index.css'
 import App from './App.jsx'
 import { SemanticResonanceProvider } from './context/SemanticResonanceContext'
 import { ResearchWorkspaceProvider } from './context/ResearchWorkspaceContext'
+import ErrorBoundary from './components/ErrorBoundary';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ResearchWorkspaceProvider>
-      <SemanticResonanceProvider>
-        <App />
-      </SemanticResonanceProvider>
-    </ResearchWorkspaceProvider>
+    <ErrorBoundary>
+      <ResearchWorkspaceProvider>
+        <SemanticResonanceProvider>
+          <App />
+        </SemanticResonanceProvider>
+      </ResearchWorkspaceProvider>
+    </ErrorBoundary>
   </StrictMode>,
 )
