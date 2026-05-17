@@ -1,139 +1,134 @@
-import React, { memo } from 'react';
-import { motion } from 'framer-motion';
+import React, { memo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useResonance } from '../context/SemanticResonanceContext';
-import { Network, GitMerge, Activity, ShieldAlert, BookOpen, Cpu, TrendingUp } from 'lucide-react';
+import { Network, GitMerge, Activity, ShieldAlert, BookOpen, Cpu, TrendingUp, ChevronDown } from 'lucide-react';
 
-// ── Semantic Constellation (replaces SVGRadar) ──────────────────────────────
+// ── Semantic Constellation ────────────────────────────────────────────────────
 const SemanticConstellation = memo(({ results, isHighDrift }) => {
   const labels = ['Assertive','Directive','Commissive','Expressive','Declaration'];
   const math = results?.final_output?.math_scores || {};
   const dist = math.speech_act_distribution || {};
-  const total = Object.values(dist).reduce((a,b)=>a+b,0) || 1;
+  const total = Math.max(Object.values(dist).reduce((a,b)=>a+b,0), 1);
 
   return (
-    <div className="relative flex items-center justify-center w-full min-h-[280px] overflow-hidden bg-black/40 border border-white/5">
-      <svg width="260" height="260" viewBox="-130 -130 260 260">
-        {/* orbit rings */}
-        {[40,80,120].map(r=>(
-          <circle key={r} r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1"
-            strokeDasharray={isHighDrift?"4 8":"2 10"}/>
+    <div className="relative flex items-center justify-center w-full min-h-[320px] overflow-hidden bg-black/30 border border-white/8">
+      <svg width="300" height="300" viewBox="-150 -150 300 300">
+        {[45,90,135].map(r=>(
+          <circle key={r} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1"
+            strokeDasharray={isHighDrift?"3 9":"2 12"}/>
         ))}
-        {/* axis lines */}
         {labels.map((_,i)=>{
           const a=(Math.PI*2*i)/5-Math.PI/2;
-          return <line key={i} x1="0" y1="0" x2={Math.cos(a)*120} y2={Math.sin(a)*120}
+          return <line key={i} x1="0" y1="0" x2={Math.cos(a)*140} y2={Math.sin(a)*140}
             stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>;
         })}
-        {/* nodes */}
         {labels.map((l,i)=>{
           const a=(Math.PI*2*i)/5-Math.PI/2;
           const count=dist[l]||0;
-          const r=20+Math.min((count/total)*100,80);
+          const r=25+Math.min((count/total)*110,85);
           const x=Math.cos(a)*r, y=Math.sin(a)*r;
           const isDir=l==='Directive'||l==='Expressive';
-          const col=isDir&&isHighDrift?'#f43f5e':'rgba(255,255,255,0.7)';
+          const col=isDir&&isHighDrift?'#f43f5e':'rgba(255,255,255,0.75)';
           return (
             <g key={l}>
-              <line x1="0" y1="0" x2={x} y2={y} stroke={col} strokeWidth="1" opacity="0.3"/>
-              <circle cx={x} cy={y} r={isDir&&isHighDrift?10:6} fill={col} opacity="0.8"/>
-              {isDir&&isHighDrift&&<circle cx={x} cy={y} r="16" fill="none" stroke="#f43f5e" strokeWidth="1" opacity="0.3"/>}
-              <text x={x*1.5} y={y*1.5} fill="rgba(255,255,255,0.5)" fontSize="8"
-                fontFamily="monospace" textAnchor="middle" dominantBaseline="middle">{l}</text>
+              <line x1="0" y1="0" x2={x} y2={y} stroke={col} strokeWidth="1" opacity="0.25"/>
+              <circle cx={x} cy={y} r={isDir&&isHighDrift?12:7} fill={col} opacity="0.85"/>
+              {isDir&&isHighDrift&&<circle cx={x} cy={y} r="20" fill="none" stroke="#f43f5e" strokeWidth="1" opacity="0.25"/>}
+              <text x={x*1.6} y={y*1.6} fill="rgba(255,255,255,0.45)" fontSize="9"
+                fontFamily="monospace" textAnchor="middle" dominantBaseline="middle"
+                letterSpacing="1">{l}</text>
             </g>
           );
         })}
-        {/* turbulence ring on high drift */}
-        {isHighDrift&&<circle r="110" fill="none" stroke="rgba(244,63,94,0.1)"
-          strokeWidth="2" strokeDasharray="3 9"/>}
+        {isHighDrift&&<circle r="130" fill="none" stroke="rgba(244,63,94,0.08)" strokeWidth="2" strokeDasharray="3 9"/>}
       </svg>
-      {isHighDrift&&<div className="absolute bottom-2 left-3 text-xs font-mono text-rose-400 uppercase tracking-widest">
+      {isHighDrift&&<div className="absolute bottom-3 left-4 text-xs font-mono text-rose-400 uppercase tracking-widest">
         Ambiguity turbulence active
       </div>}
     </div>
   );
 });
 
-// ── Meaning Evolution River (replaces SVGSankey) ─────────────────────────────
+// ── Meaning Evolution River ───────────────────────────────────────────────────
 const MeaningRiver = memo(({ results, isHighDrift }) => {
   const segs = results?.segments || [];
-  const points = segs.map((s,i)=>{
+  const w=400, h=140;
+  const pts = segs.map((s,i)=>{
     const conf=s.pragmatics?.confidence||0.5;
-    const y=100-conf*80;
-    return `${(i/(Math.max(segs.length-1,1)))*380},${y}`;
-  }).join(' ');
+    return { x:(i/Math.max(segs.length-1,1))*w, y:h-(conf*(h-20))-10, conf };
+  });
+  const pathD=pts.map((p,i)=>`${i===0?'M':'L'} ${p.x} ${p.y}`).join(' ');
+  const fillD=pathD+` L ${w} ${h} L 0 ${h} Z`;
 
   return (
-    <div className="relative w-full min-h-[220px] bg-black/40 border border-white/5 flex items-center overflow-hidden">
-      <svg width="100%" height="200" viewBox="0 0 400 160" preserveAspectRatio="none">
+    <div className="relative w-full min-h-[260px] bg-black/30 border border-white/8 flex items-center overflow-hidden">
+      <svg width="100%" height="220" viewBox={`0 0 ${w} ${h+20}`} preserveAspectRatio="none">
         <defs>
-          <linearGradient id="riverGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.6)"/>
-            <stop offset="60%" stopColor="rgba(255,255,255,0.3)"/>
-            <stop offset="100%" stopColor={isHighDrift?"rgba(244,63,94,0.8)":"rgba(255,255,255,0.5)"}/>
+          <linearGradient id="riverFill" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.08)"/>
+            <stop offset="100%" stopColor={isHighDrift?"rgba(244,63,94,0.12)":"rgba(255,255,255,0.06)"}/>
           </linearGradient>
-          <filter id="blur1"><feGaussianBlur stdDeviation="2"/></filter>
+          <linearGradient id="riverLine" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.6)"/>
+            <stop offset="100%" stopColor={isHighDrift?"rgba(244,63,94,0.9)":"rgba(255,255,255,0.5)"}/>
+          </linearGradient>
         </defs>
-        {/* glow path */}
-        {segs.length>1&&<polyline points={points} fill="none"
-          stroke={isHighDrift?"rgba(244,63,94,0.2)":"rgba(255,255,255,0.08)"}
-          strokeWidth="16" filter="url(#blur1)"/>}
-        {/* main path */}
-        {segs.length>1&&<polyline points={points} fill="none"
-          stroke="url(#riverGrad)" strokeWidth="2"/>}
-        {/* fracture points on high drift */}
+        {[25,50,75].map(y=>(
+          <line key={y} x1="0" y1={h-(y*(h-20)/100)} x2={w} y2={h-(y*(h-20)/100)}
+            stroke="rgba(255,255,255,0.03)" strokeWidth="1" strokeDasharray="4 8"/>
+        ))}
+        {pts.length>1&&<path d={fillD} fill="url(#riverFill)"/>}
+        {pts.length>1&&<path d={pathD} fill="none" stroke="url(#riverLine)" strokeWidth="2"/>}
         {isHighDrift&&segs.map((s,i)=>{
           const conf=s.pragmatics?.confidence||0.5;
           if(conf<0.65&&i>0){
-            const x=(i/(Math.max(segs.length-1,1)))*380;
-            const y=100-conf*80;
-            return <circle key={i} cx={x} cy={y} r="5" fill="none" stroke="#f43f5e"
-              strokeWidth="1" strokeDasharray="2 3"/>;
+            const x=(i/Math.max(segs.length-1,1))*w;
+            const y=h-(conf*(h-20))-10;
+            return <g key={i}>
+              <circle cx={x} cy={y} r="6" fill="none" stroke="#f43f5e" strokeWidth="1.5" strokeDasharray="2 3"/>
+              <circle cx={x} cy={y} r="2.5" fill="#f43f5e"/>
+            </g>;
           }
           return null;
         })}
-        {/* labels */}
-        <text x="4" y="20" fill="rgba(255,255,255,0.2)" fontSize="8" fontFamily="monospace">NOMINAL</text>
-        <text x="4" y="150" fill="rgba(244,63,94,0.4)" fontSize="8" fontFamily="monospace">CRITICAL</text>
+        <text x="6" y="18" fill="rgba(255,255,255,0.2)" fontSize="9" fontFamily="monospace">NOMINAL</text>
+        <text x="6" y={h+14} fill="rgba(244,63,94,0.35)" fontSize="9" fontFamily="monospace">CRITICAL</text>
       </svg>
-      {isHighDrift&&<div className="absolute bottom-2 left-3 text-xs font-mono text-rose-400 tracking-widest uppercase">
+      {isHighDrift&&<div className="absolute bottom-3 left-4 text-xs font-mono text-rose-400 tracking-widest uppercase">
         Semantic fracture points detected
       </div>}
     </div>
   );
 });
 
-// ── Drift Pressure Atmosphere (replaces area chart) ──────────────────────────
+// ── Drift Pressure Atmosphere ─────────────────────────────────────────────────
 const DriftAtmosphere = memo(({ results, isHighDrift }) => {
   const segs = results?.segments || [];
-  const w=400, h=120;
+  const w=400, h=130;
   const bars = segs.map((s,i)=>{
     const conf=s.pragmatics?.confidence||0.5;
     const pressure=(1-conf)*100;
-    return { x:(i/Math.max(segs.length-1,1))*w, h:pressure*h/100, pressure };
+    return { x:(i/Math.max(segs.length-1,1))*w, h:pressure*h/100, pressure, idx:i+1 };
   });
 
   return (
-    <div className="relative w-full min-h-[180px] bg-black/40 border border-white/5 overflow-hidden">
-      <svg width="100%" height="140" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="atmGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={isHighDrift?"#f43f5e":"rgba(255,255,255,0.8)"}/>
-            <stop offset="100%" stopColor="transparent"/>
-          </linearGradient>
-        </defs>
-        {/* heatmap bars */}
-        {bars.map((b,i)=>(
-          <rect key={i} x={b.x-6} y={h-b.h} width="12" height={b.h}
-            fill={b.pressure>60?"rgba(244,63,94,0.6)":b.pressure>35?"rgba(251,191,36,0.4)":"rgba(255,255,255,0.2)"}
+    <div className="relative w-full min-h-[220px] bg-black/30 border border-white/8 overflow-hidden">
+      <svg width="100%" height="180" viewBox={`0 0 ${w} ${h+20}`} preserveAspectRatio="none">
+        {isHighDrift&&bars.map((b)=>b.pressure>65&&(
+          <rect key={`wave${b.idx}`} x={b.x-15} y="0" width="30" height={h}
+            fill="rgba(244,63,94,0.06)"/>
+        ))}
+        {bars.map((b)=>(
+          <rect key={b.idx} x={b.x-8} y={h-b.h} width="16" height={b.h}
+            fill={b.pressure>65?"rgba(244,63,94,0.65)":b.pressure>40?"rgba(251,191,36,0.45)":"rgba(255,255,255,0.18)"}
             rx="1"/>
         ))}
-        {/* coercion wavefront */}
-        {isHighDrift&&bars.map((b,i)=>b.pressure>65&&(
-          <line key={`w${i}`} x1={b.x} y1="0" x2={b.x} y2={h}
-            stroke="rgba(244,63,94,0.15)" strokeWidth="20"/>
+        {bars.map((b)=>(
+          <text key={`l${b.idx}`} x={b.x} y={h+14} fill="rgba(255,255,255,0.2)"
+            fontSize="8" textAnchor="middle" fontFamily="monospace">C{b.idx}</text>
         ))}
       </svg>
-      <div className="absolute top-2 left-3 flex gap-4 text-xs font-mono text-slate-600 uppercase tracking-widest">
+      <div className="absolute top-3 left-4 flex gap-4 text-xs font-mono text-slate-600 uppercase tracking-widest">
         <span>Pressure Storm Map</span>
         {isHighDrift&&<span className="text-rose-400 animate-pulse">Coercion Wavefront Active</span>}
       </div>
@@ -141,48 +136,47 @@ const DriftAtmosphere = memo(({ results, isHighDrift }) => {
   );
 });
 
-// ── Semantic Mutation Timeline (replaces line chart) ─────────────────────────
+// ── Semantic Mutation Timeline ────────────────────────────────────────────────
 const MutationTimeline = memo(({ results, isHighDrift }) => {
   const segs = results?.segments || [];
-  const w=400, h=100;
+  const w=400, h=110;
   const pts = segs.map((s,i)=>{
     const conf=s.semantics?.confidence||s.pragmatics?.confidence||0.5;
-    return { x:(i/Math.max(segs.length-1,1))*w, y:h-(conf*h*0.8)-10, conf };
+    return { x:(i/Math.max(segs.length-1,1))*w, y:h-(conf*h*0.85)-8, conf, idx:i+1 };
   });
   const pathD=pts.map((p,i)=>`${i===0?'M':'L'} ${p.x} ${p.y}`).join(' ');
 
   return (
-    <div className="relative w-full min-h-[180px] bg-black/40 border border-white/5 overflow-hidden">
-      <svg width="100%" height="130" viewBox={`0 0 ${w} ${h+20}`} preserveAspectRatio="none">
+    <div className="relative w-full min-h-[220px] bg-black/30 border border-white/8 overflow-hidden">
+      <svg width="100%" height="180" viewBox={`0 0 ${w} ${h+20}`} preserveAspectRatio="none">
         <defs>
           <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="rgba(255,255,255,0.5)"/>
-            <stop offset="100%" stopColor={isHighDrift?"rgba(244,63,94,0.8)":"rgba(255,255,255,0.5)"}/>
+            <stop offset="100%" stopColor={isHighDrift?"rgba(244,63,94,0.8)":"rgba(255,255,255,0.4)"}/>
           </linearGradient>
         </defs>
-        {/* baseline */}
-        <line x1="0" y1={h} x2={w} y2={h} stroke="rgba(255,255,255,0.05)" strokeWidth="1"/>
-        {/* grid */}
+        <line x1="0" y1={h} x2={w} y2={h} stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
         {[25,50,75].map(y=>(
           <line key={y} x1="0" y1={h-(y*h/100)} x2={w} y2={h-(y*h/100)}
             stroke="rgba(255,255,255,0.03)" strokeWidth="1" strokeDasharray="4 8"/>
         ))}
-        {/* waveform */}
-        {pts.length>1&&<path d={pathD} fill="none" stroke="url(#waveGrad)" strokeWidth="1.5"/>}
-        {/* escalation bursts */}
-        {pts.map((p,i)=>p.conf<0.6&&(
-          <g key={`burst${i}`}>
-            <circle cx={p.x} cy={p.y} r="5" fill="none" stroke="rgba(244,63,94,0.5)" strokeWidth="1"/>
-            <circle cx={p.x} cy={p.y} r="2" fill="#f43f5e"/>
+        {pts.length>1&&<path d={pathD} fill="none" stroke="url(#waveGrad)" strokeWidth="2"/>}
+        {pts.map((p)=>p.conf<0.6&&(
+          <g key={`burst${p.idx}`}>
+            <circle cx={p.x} cy={p.y} r="6" fill="none" stroke="rgba(244,63,94,0.5)" strokeWidth="1.5"/>
+            <circle cx={p.x} cy={p.y} r="2.5" fill="#f43f5e"/>
           </g>
         ))}
-        {/* stabilization windows */}
-        {pts.map((p,i)=>p.conf>0.85&&(
-          <rect key={`stab${i}`} x={p.x-8} y={0} width="16" height={h+20}
-            fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
+        {pts.map((p)=>p.conf>0.85&&(
+          <rect key={`stab${p.idx}`} x={p.x-10} y={0} width="20" height={h}
+            fill="rgba(255,255,255,0.015)"/>
+        ))}
+        {pts.map((p)=>(
+          <text key={`l${p.idx}`} x={p.x} y={h+14} fill="rgba(255,255,255,0.2)"
+            fontSize="8" textAnchor="middle" fontFamily="monospace">C{p.idx}</text>
         ))}
       </svg>
-      <div className="absolute bottom-2 left-3 flex gap-4 text-xs font-mono text-slate-600 uppercase tracking-widest">
+      <div className="absolute bottom-3 left-4 flex gap-4 text-xs font-mono text-slate-600 uppercase tracking-widest">
         <span>Propagation Waveform</span>
         {isHighDrift&&<span className="text-rose-400">Entropy collapse regions detected</span>}
       </div>
@@ -190,91 +184,116 @@ const MutationTimeline = memo(({ results, isHighDrift }) => {
   );
 });
 
-// ── Orchestrator Synthesis ───────────────────────────────────────────────────
+// ── Orchestrator Synthesis ────────────────────────────────────────────────────
 const OrchestratorSynthesis = ({ results, isHighDrift }) => {
+  const [openBlock, setOpenBlock] = useState(null);
   const plan = results?.execution_plan || {};
   const math = results?.final_output?.math_scores || {};
   const segs = results?.segments || [];
-  const totalClauses = segs.length;
   const highEntropyIdx = segs.reduce((acc,s,i)=>(s.pragmatics?.confidence||1)<0.65?[...acc,i]:acc,[]);
+  const synthConf = (1-(math.systemic_uncertainty_index||0.05)).toFixed(2);
+
+  const interpBlocks = [
+    { label:'ACADEMIC', text:`Systemic functional analysis reveals ${isHighDrift?'statistically significant':'nominal'} pragmatic drift. KL divergence signals distributional shift in illocutionary force from assertives toward deontic directives. Institutional register override compounds ambiguity propagation across clause boundaries.` },
+    { label:'PRACTICAL', text: isHighDrift?'The speaker progressively escalates pressure using institutional authority, overriding cooperative conversational norms. The shift from informing to commanding is detectable and measurable.':'The speaker maintains a cooperative communicative stance throughout the corpus. No significant escalation detected.' },
+    { label:'COGNITIVE', text:`Working memory demand is ${isHighDrift?'elevated':'nominal'}. Semantic ambiguity forces increased reanalysis cycles. ${isHighDrift?'Syntactic repackaging of coercive intent introduces cognitive dissonance for the listener.':'Transparent structure minimizes processing load.'}` },
+    { label:'RISK', text: isHighDrift?'HIGH RISK — Coercive discourse patterns confirmed. Institutional register override and lexical mutation indicate systematic rhetorical manipulation.':'LOW RISK — Cooperative norms maintained. No manipulation vectors detected.' },
+    { label:'PLAIN LANGUAGE', text: isHighDrift?'The text starts off normal but gradually becomes more controlling and forceful. The speaker is trying to push you to agree or act without openly saying so.':'The text is clear and honest throughout. The speaker is sharing information without hidden pressure.' },
+  ];
 
   return (
-    <div className="bg-black/60 border border-white/8 p-6 mt-10">
-      <div className="flex items-center gap-3 mb-6 border-b border-white/8 pb-4">
-        <Cpu size={14} className="text-slate-400"/>
-        <h3 className="font-mono text-sm text-white uppercase tracking-[0.2em]">Orchestrator Synthesis</h3>
-        <span className="ml-auto text-[10px] font-mono text-slate-500 border border-white/8 px-2 py-1 uppercase">Consensus Locked</span>
+    <div className="bg-black/50 border border-white/10 p-8 mt-10">
+      <div className="flex items-center gap-3 mb-8 border-b border-white/8 pb-5">
+        <Cpu size={18} className="text-slate-400"/>
+        <h3 className="font-mono text-xl text-white uppercase tracking-[0.15em]">Orchestrator Synthesis</h3>
+        <span className="ml-auto text-xs font-mono text-slate-500 border border-white/10 px-3 py-1 uppercase">Consensus Locked</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Final Drift Narrative */}
-        <div className="space-y-3">
-          <h4 className="text-xs font-mono text-slate-400 uppercase tracking-widest flex items-center gap-2"><TrendingUp size={10}/>Final Drift Narrative</h4>
-          <div className="bg-white/3 border border-white/5 p-4 text-xs font-mono text-slate-300 leading-relaxed space-y-2">
-            <p><span className="text-white">Origin:</span> Institutional framing introduced in early clauses established authority asymmetry.</p>
-            <p><span className="text-white">Escalation:</span> {highEntropyIdx.length>0?`Clauses ${highEntropyIdx.map(i=>i+1).join(', ')} triggered pragmatic pressure escalation.`:'No critical escalation detected.'}</p>
-            <p><span className="text-white">Theory Dominance:</span> {isHighDrift?'Gricean violations + SFL register shift co-activated':'Speech Act Theory maintained nominal mapping.'}.</p>
-            <p><span className="text-white">Stabilization:</span> Weighted arbitration resolved conflicts at confidence δ +0.08.</p>
+        <div>
+          <h4 className="text-sm font-mono text-slate-300 uppercase tracking-widest flex items-center gap-2 mb-4">
+            <TrendingUp size={14}/>Final Drift Narrative
+          </h4>
+          <div className="bg-white/3 border border-white/8 p-5 space-y-3 text-sm font-mono text-slate-300 leading-relaxed">
+            <p><span className="text-white font-bold">Origin:</span> Institutional framing seeded in early clauses established authority asymmetry before escalation began.</p>
+            <p><span className="text-white font-bold">Escalation:</span> {highEntropyIdx.length>0?`Clauses ${highEntropyIdx.map(i=>i+1).join(', ')} triggered pragmatic pressure escalation via deontic modality injection.`:'No critical escalation events detected — discourse maintained cooperative baseline.'}</p>
+            <p><span className="text-white font-bold">Theory Conflict:</span> {isHighDrift?'Gricean cooperative maxim violations co-activated with SFL register shifts, forcing arbitration.':'Single-theory consensus. No inter-theory conflicts required arbitration.'}</p>
+            <p><span className="text-white font-bold">Stabilization:</span> Weighted epistemic synthesis resolved all conflicts. Final confidence: {synthConf}.</p>
           </div>
         </div>
 
         {/* Arbitration Summary */}
-        <div className="space-y-3">
-          <h4 className="text-xs font-mono text-slate-400 uppercase tracking-widest flex items-center gap-2"><ShieldAlert size={10}/>Arbitration Summary</h4>
-          <div className="bg-white/3 border border-white/5 p-4 space-y-3">
+        <div>
+          <h4 className="text-sm font-mono text-slate-300 uppercase tracking-widest flex items-center gap-2 mb-4">
+            <ShieldAlert size={14}/>Arbitration Summary
+          </h4>
+          <div className="bg-white/3 border border-white/8 p-5 space-y-3">
             {[
-              { agent:'Pragmatics', status: isHighDrift?'Coercive escalation detected.':'Nominal intent mapping.', col: isHighDrift?'text-amber-400':'text-slate-400' },
-              { agent:'Semantics', status: isHighDrift?'Lexical destabilization active.':'Semantic field stable.', col: isHighDrift?'text-rose-400':'text-slate-400' },
-              { agent:'Register', status: isHighDrift?'Institutional authority override confirmed.':'Register alignment nominal.', col: isHighDrift?'text-amber-300':'text-slate-400' },
-              { agent:'Orchestrator', status:`Weighted synthesis accepted. Confidence: ${(1-(math.systemic_uncertainty_index||0.05)).toFixed(2)}.`, col:'text-white' },
+              { agent:'Pragmatics', status: isHighDrift?'Coercive escalation detected. Deontic modality elevated.':'Nominal intent mapping. Cooperative maxims intact.', col: isHighDrift?'text-amber-400':'text-slate-400' },
+              { agent:'Semantics', status: isHighDrift?'Lexical destabilization active. Semantic field migration confirmed.':'Semantic field stable. No migration detected.', col: isHighDrift?'text-rose-400':'text-slate-400' },
+              { agent:'Register', status: isHighDrift?'Institutional authority override triggered. Formality tensor elevated.':'Register alignment nominal. Formality gradient stable.', col: isHighDrift?'text-amber-300':'text-slate-400' },
+              { agent:'Orchestrator', status:`Weighted synthesis accepted. System confidence: ${synthConf}.`, col:'text-white' },
             ].map(row=>(
-              <div key={row.agent} className="flex gap-3 text-[10px] font-mono border-b border-white/5 pb-2">
-                <span className="text-slate-600 w-24 shrink-0 uppercase tracking-widest">[{row.agent}]</span>
+              <div key={row.agent} className="flex gap-4 text-sm font-mono border-b border-white/5 pb-3">
+                <span className="text-slate-600 w-28 shrink-0 uppercase tracking-wider text-xs">[{row.agent}]</span>
                 <span className={row.col}>{row.status}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Propagation Tree */}
-        <div className="space-y-3">
-          <h4 className="text-xs font-mono text-slate-400 uppercase tracking-widest flex items-center gap-2"><GitMerge size={10}/>Semantic Propagation Tree</h4>
-          <div className="bg-white/3 border border-white/5 p-4 font-mono text-[10px]">
-            {totalClauses>=2?(
-              <div className="flex flex-col gap-2">
-                {segs.slice(0,Math.min(segs.length,6)).map((s,i)=>{
+        {/* Semantic Propagation Tree */}
+        <div>
+          <h4 className="text-sm font-mono text-slate-300 uppercase tracking-widest flex items-center gap-2 mb-4">
+            <GitMerge size={14}/>Semantic Propagation Tree
+          </h4>
+          <div className="bg-white/3 border border-white/8 p-5">
+            {segs.length>=2?(
+              <div className="flex flex-col gap-2 font-mono text-sm">
+                {segs.slice(0,Math.min(segs.length,8)).map((s,i)=>{
                   const conf=s.pragmatics?.confidence||1;
                   const isEsc=conf<0.65;
+                  const indent=i*12;
                   return (
-                    <div key={i} className="flex items-start gap-2" style={{paddingLeft:`${i*10}px`}}>
-                      <span className="text-slate-600 shrink-0">{'─'.repeat(i>0?1:0)}</span>
-                      <div className={`flex-1 flex justify-between ${isEsc?'text-rose-400':'text-slate-400'}`}>
-                        <span>Clause {i+1}</span>
-                        <span>{isEsc?'→ escalation propagated':'→ stable propagation'}</span>
-                        <span className="text-slate-600">{(conf*100).toFixed(0)}%</span>
-                      </div>
+                    <div key={i} className="flex items-center gap-3" style={{paddingLeft:`${indent}px`}}>
+                      <span className="text-slate-700 shrink-0 text-xs">{'└─'}</span>
+                      <span className="text-slate-500 shrink-0 w-16 text-xs">Clause {i+1}</span>
+                      <span className={`flex-1 text-xs ${isEsc?'text-rose-400':'text-slate-500'}`}>
+                        {isEsc?'→ escalation propagated':'→ stable propagation'}
+                      </span>
+                      <span className={`text-xs font-bold ${isEsc?'text-rose-400':'text-slate-600'}`}>
+                        {(conf*100).toFixed(0)}%
+                      </span>
                     </div>
                   );
                 })}
               </div>
-            ):<p className="text-slate-600">Awaiting analysis.</p>}
+            ):<p className="text-slate-600 font-mono text-sm">Awaiting analysis corpus.</p>}
           </div>
         </div>
 
         {/* Research Interpretation Blocks */}
-        <div className="space-y-3">
-          <h4 className="text-xs font-mono text-slate-400 uppercase tracking-widest flex items-center gap-2"><BookOpen size={10}/>Research Interpretation</h4>
+        <div>
+          <h4 className="text-sm font-mono text-slate-300 uppercase tracking-widest flex items-center gap-2 mb-4">
+            <BookOpen size={14}/>Research Interpretation
+          </h4>
           <div className="space-y-2">
-            {[
-              { label:'ACADEMIC', col:'border-white/20 text-slate-300', text:`Systemic functional analysis reveals ${isHighDrift?'significant':'nominal'} pragmatic drift. KL divergence indicates distributional shift in speech act modality.` },
-              { label:'PRACTICAL', col:'border-white/10 text-slate-400', text:isHighDrift?'The speaker is applying escalating pressure using institutional authority to override cooperative discourse norms.':'The speaker maintains a cooperative and transparent communicative stance.' },
-              { label:'COGNITIVE', col:'border-white/8 text-slate-400', text:`Working memory load is ${isHighDrift?'elevated':'stable'}. Semantic ambiguity creates ${isHighDrift?'high':'low'} cognitive processing demand.` },
-              { label:'RISK', col:isHighDrift?'border-rose-500/30 text-rose-400':'border-white/8 text-slate-500', text:isHighDrift?'HIGH — Coercive discourse patterns detected. Institutional register override confirmed.':'LOW — Cooperative norms maintained throughout corpus.' },
-              { label:'PLAIN', col:'border-white/5 text-slate-500', text:isHighDrift?'The text starts neutral but gets progressively more controlling and forceful.':'The text is consistently clear and non-manipulative throughout.' },
-            ].map(b=>(
-              <div key={b.label} className={`bg-white/2 border ${b.col} p-3 text-[10px] font-mono`}>
-                <span className="text-xs uppercase tracking-widest block mb-1 text-slate-600">{b.label}</span>
-                <p className="leading-relaxed">{b.text}</p>
+            {interpBlocks.map((b,i)=>(
+              <div key={b.label} className="border border-white/8 overflow-hidden">
+                <button onClick={()=>setOpenBlock(openBlock===i?null:i)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white/3 hover:bg-white/5 transition-colors">
+                  <span className="text-xs font-mono text-slate-400 uppercase tracking-widest">{b.label}</span>
+                  <ChevronDown size={12} className={`text-slate-600 transition-transform ${openBlock===i?'rotate-180':''}`}/>
+                </button>
+                <AnimatePresence>
+                  {openBlock===i&&(
+                    <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}}
+                      className="px-4 py-3 bg-black/40 border-t border-white/5">
+                      <p className="text-sm font-mono text-slate-300 leading-relaxed">{b.text}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
           </div>
@@ -293,39 +312,38 @@ const KeywordIntelligence = ({ results }) => {
       const isDir=act.category==='Directive';
       keywords.push({ word:act.evidence, cat:act.category, conf:act.confidence,
         theory:'Speech Act Theory', role:'Pragmatic Force',
-        color: isDir?'border-rose-500/40 text-rose-400':'border-white/20 text-slate-300' });
+        color: isDir?'border-rose-500/40 text-rose-400 bg-rose-500/5':'border-white/15 text-slate-300 bg-white/3' });
     });
     seg.semantics?.semantic_fields?.slice(0,2).forEach(f=>{
       if(!f.word) return;
       keywords.push({ word:f.word, cat:f.field, conf:0.85,
         theory:'Halliday SFL', role:'Semantic Anchor',
-        color:'border-white/15 text-slate-400' });
+        color:'border-white/10 text-slate-400 bg-white/2' });
     });
   });
 
   return (
-    <div className="bg-black/50 border border-white/8 p-6 mt-8">
-      <div className="flex items-center gap-3 mb-5 border-b border-white/8 pb-3">
-        <Network size={12} className="text-slate-500"/>
-        <h3 className="font-mono text-sm text-white uppercase tracking-[0.2em]">Keyword Intelligence Observatory</h3>
+    <div className="bg-black/40 border border-white/8 p-8 mt-8">
+      <div className="flex items-center gap-3 mb-6 border-b border-white/8 pb-4">
+        <Network size={16} className="text-slate-500"/>
+        <h3 className="font-mono text-xl text-white uppercase tracking-[0.15em]">Keyword Intelligence Observatory</h3>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {keywords.slice(0,30).map((kw,i)=>(
-          <div key={i} className={`group relative px-3 py-1 border text-xs font-mono cursor-crosshair hover:bg-white/5 transition-colors ${kw.color}`}>
+      {keywords.length===0&&<p className="text-slate-600 font-mono text-sm">No keyword data. Run an analysis to populate this observatory.</p>}
+      <div className="flex flex-wrap gap-3">
+        {keywords.slice(0,32).map((kw,i)=>(
+          <div key={i} className={`group relative px-4 py-2 border text-sm font-mono cursor-crosshair hover:bg-white/8 transition-colors ${kw.color}`}>
             {kw.word}
-            <div className="absolute bottom-full left-0 mb-2 w-56 bg-black border border-white/15 p-3 hidden group-hover:flex flex-col gap-1 z-50 shadow-xl text-[10px] font-mono">
-              <div className="flex justify-between border-b border-white/8 pb-1 mb-1">
-                <span className="text-slate-500 uppercase tracking-widest">Category</span>
-                <span className="text-white">{kw.cat}</span>
+            <div className="absolute bottom-full left-0 mb-2 w-64 bg-black border border-white/15 p-4 hidden group-hover:flex flex-col gap-2 z-50 shadow-2xl text-xs font-mono">
+              <div className="flex justify-between border-b border-white/8 pb-2 mb-1">
+                <span className="text-slate-500 uppercase tracking-widest">Token</span>
+                <span className="text-white font-bold">"{kw.word}"</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Theory</span><span className="text-slate-300">{kw.theory}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Role</span><span className="text-slate-300">{kw.role}</span>
-              </div>
-              <div className="flex justify-between border-t border-white/5 pt-1 mt-1">
-                <span className="text-slate-500">Confidence</span><span className="text-white">{(kw.conf*100).toFixed(1)}%</span>
+              <div className="flex justify-between"><span className="text-slate-500">Category</span><span className="text-slate-200">{kw.cat}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Theory</span><span className="text-slate-300">{kw.theory}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Role</span><span className="text-slate-300">{kw.role}</span></div>
+              <div className="flex justify-between border-t border-white/5 pt-2 mt-1">
+                <span className="text-slate-500">Confidence</span>
+                <span className="text-white font-bold">{(kw.conf*100).toFixed(1)}%</span>
               </div>
             </div>
           </div>
@@ -335,63 +353,41 @@ const KeywordIntelligence = ({ results }) => {
   );
 };
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function DensifiedIntelligence({ results }) {
   const { resonanceState } = useResonance();
   const isHighDrift = resonanceState.intensityMultiplier > 1.5;
   if (!results) return null;
 
+  const vizPanels = [
+    { title:'Semantic Constellation Observatory', subtitle:'Gravitational speech act mapping. Directive nodes distort geometry under high drift.', comp:<SemanticConstellation results={results} isHighDrift={isHighDrift}/> },
+    { title:'Meaning Evolution River', subtitle:'Semantic confidence across clauses as a living continuum. Fracture points mark rhetorical turbulence.', comp:<MeaningRiver results={results} isHighDrift={isHighDrift}/> },
+    { title:'Drift Pressure Atmosphere', subtitle:'Atmospheric heatmap of coercive pressure. Storm bars indicate coercion wavefronts.', comp:<DriftAtmosphere results={results} isHighDrift={isHighDrift}/> },
+    { title:'Semantic Mutation Timeline', subtitle:'Propagation waveform with escalation bursts and entropy collapse regions annotated.', comp:<MutationTimeline results={results} isHighDrift={isHighDrift}/> },
+  ];
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-12">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-1">
-          <Activity size={10} className="text-slate-600"/>
-          <span className="font-mono text-[10px] text-slate-600 uppercase tracking-[0.2em]">Multi-dimensional Deterministic Synthesis</span>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-16">
+      {/* Section Header */}
+      <div className="mb-10">
+        <div className="flex items-center gap-2 mb-2">
+          <Activity size={12} className="text-slate-600"/>
+          <span className="font-mono text-xs text-slate-600 uppercase tracking-[0.25em]">Multi-dimensional Deterministic Synthesis</span>
         </div>
-        <h2 className="font-mono text-lg text-white uppercase tracking-[0.1em]">Discourse Intelligence Matrix</h2>
+        <h2 className="font-mono text-2xl text-white uppercase tracking-[0.12em]">Discourse Intelligence Matrix</h2>
       </div>
 
       {/* 4 Visualization Panels */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-black/50 border border-white/8 p-4">
-          <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-3 border-b border-white/5 pb-2">
-            Semantic Constellation Observatory
-          </span>
-          <SemanticConstellation results={results} isHighDrift={isHighDrift}/>
-          <p className="text-[10px] font-mono text-slate-600 mt-3 leading-relaxed">
-            Gravitational mapping of speech act distribution. Directive nodes distort the constellation under high drift conditions.
-          </p>
-        </div>
-
-        <div className="bg-black/50 border border-white/8 p-4">
-          <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-3 border-b border-white/5 pb-2">
-            Meaning Evolution River
-          </span>
-          <MeaningRiver results={results} isHighDrift={isHighDrift}/>
-          <p className="text-[10px] font-mono text-slate-600 mt-3 leading-relaxed">
-            Semantic confidence as a flowing continuum. Fracture points mark rhetorical turbulence zones.
-          </p>
-        </div>
-
-        <div className="bg-black/50 border border-white/8 p-4">
-          <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-3 border-b border-white/5 pb-2">
-            Drift Pressure Atmosphere
-          </span>
-          <DriftAtmosphere results={results} isHighDrift={isHighDrift}/>
-          <p className="text-[10px] font-mono text-slate-600 mt-3 leading-relaxed">
-            Atmospheric heatmap of coercive pressure accumulation. Storms indicate coercion wavefronts.
-          </p>
-        </div>
-
-        <div className="bg-black/50 border border-white/8 p-4">
-          <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-3 border-b border-white/5 pb-2">
-            Semantic Mutation Timeline
-          </span>
-          <MutationTimeline results={results} isHighDrift={isHighDrift}/>
-          <p className="text-[10px] font-mono text-slate-600 mt-3 leading-relaxed">
-            Propagation waveform with escalation bursts and entropy collapse regions annotated.
-          </p>
-        </div>
+        {vizPanels.map((v,i)=>(
+          <div key={i} className="bg-black/40 border border-white/8 p-5 flex flex-col gap-4">
+            <div className="border-b border-white/8 pb-3">
+              <h3 className="font-mono text-sm text-white uppercase tracking-widest">{v.title}</h3>
+            </div>
+            {v.comp}
+            <p className="text-xs font-mono text-slate-600 leading-relaxed">{v.subtitle}</p>
+          </div>
+        ))}
       </div>
 
       <OrchestratorSynthesis results={results} isHighDrift={isHighDrift}/>
