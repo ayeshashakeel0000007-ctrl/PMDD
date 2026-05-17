@@ -71,7 +71,7 @@ const PacketStream = ({ active, color = 'bg-white', count = 3 }) => {
 
 const EntropyBar = ({ value = 0, label, color = 'bg-white' }) => (
   <div className="space-y-[3px]">
-    <div className="flex justify-between text-[7px] font-mono uppercase tracking-widest text-slate-500">
+    <div className="flex justify-between text-xs font-mono uppercase tracking-widest text-slate-500">
       <span>{label}</span><span className="text-slate-300">{value}%</span>
     </div>
     <div className="w-full h-[2px] bg-white/5">
@@ -145,7 +145,7 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
         <div className="flex items-center justify-between border-b border-white/8 pb-2 relative z-10">
           <div className="flex items-center gap-2">
             <div className={`${isConflict ? 'text-amber-500' : isActive ? 'text-white' : 'text-slate-500'}`}>{agent.icon}</div>
-            <span className="font-mono text-[9px] tracking-[0.2em] uppercase font-bold text-white">{agent.name}</span>
+            <span className="font-mono text-xs tracking-[0.2em] uppercase font-bold text-white">{agent.name}</span>
           </div>
           <div className="flex items-center gap-1">
             {isConflict && <AlertTriangle size={8} className="text-amber-500 animate-pulse"/>}
@@ -156,16 +156,16 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
         </div>
 
         {/* Cognitive State Badge */}
-        <div className={`text-[7px] font-mono uppercase tracking-[0.15em] border px-2 py-[2px] w-fit ${stateStyle} ${isConflict ? 'animate-pulse' : ''}`}>
+        <div className={`text-xs font-mono uppercase tracking-[0.15em] border px-2 py-[2px] w-fit ${stateStyle} ${isConflict ? 'animate-pulse' : ''}`}>
           {cogState}
         </div>
 
         {/* Purpose Block */}
         <div className="bg-white/3 border border-white/5 p-2 relative z-10">
-          <p className="text-[8px] font-mono text-slate-400 leading-relaxed">{agent.purpose}</p>
+          <p className="text-[10px] font-mono text-slate-400 leading-relaxed">{agent.purpose}</p>
           <div className="mt-2 pt-2 border-t border-white/5">
-            <span className="text-[7px] font-mono text-slate-600 uppercase tracking-widest">Theory: </span>
-            <span className="text-[7px] font-mono text-white">{agent.theoryDominance}</span>
+            <span className="text-xs font-mono text-slate-600 uppercase tracking-widest">Theory: </span>
+            <span className="text-xs font-mono text-white">{agent.theoryDominance}</span>
           </div>
         </div>
 
@@ -177,7 +177,7 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
             { label: 'Confidence', val: `${metrics.confidence}%` },
             { label: 'Clauses', val: metrics.throughputClauses },
           ].map(m => (
-            <div key={m.label} className="flex justify-between text-[7px] font-mono">
+            <div key={m.label} className="flex justify-between text-xs font-mono">
               <span className="text-slate-600 uppercase tracking-widest">{m.label}</span>
               <span className="text-slate-200">{m.val}</span>
             </div>
@@ -192,7 +192,7 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
 
         {/* Packet Stream Telemetry */}
         <div className="relative z-10 space-y-1">
-          <span className="text-[7px] font-mono text-slate-600 uppercase tracking-widest">Packet Stream</span>
+          <span className="text-xs font-mono text-slate-600 uppercase tracking-widest">Packet Stream</span>
           <PacketStream
             active={isActive}
             color={isConflict ? 'bg-amber-400' : isHighDrift ? 'bg-rose-400' : 'bg-white'}
@@ -204,7 +204,7 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
         <div className="flex items-center gap-2 relative z-10 mt-auto">
           <motion.div animate={isActive ? { opacity: [0.3, 1, 0.3] } : {}} transition={{ duration: 1.5, repeat: Infinity }}
             className={`w-[3px] h-[3px] rounded-full ${isConflict ? 'bg-amber-500' : isActive ? 'bg-white' : 'bg-white/10'}`} />
-          <span className="text-[7px] font-mono text-slate-600 uppercase tracking-widest">
+          <span className="text-xs font-mono text-slate-600 uppercase tracking-widest">
             Sync: {cogState === 'Synchronizing' ? 'AWAIT' : isActive ? 'ACTIVE' : 'IDLE'}
           </span>
         </div>
@@ -244,10 +244,10 @@ const InspectionDrawer = ({ agent, results, isHighDrift }) => {
         {/* Traces */}
         <div>
           <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
-            <Terminal size={10} className="text-slate-500"/><span className="text-[8px] font-mono uppercase tracking-widest text-slate-500">Computational Traces</span>
+            <Terminal size={10} className="text-slate-500"/><span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Computational Traces</span>
           </div>
-          <pre className="text-[8px] font-mono text-slate-300 bg-white/3 p-3 border border-white/5 whitespace-pre-wrap leading-relaxed">{traces[agent.id]}</pre>
-          <div className="mt-2 text-[7px] font-mono text-slate-600 space-y-1">
+          <pre className="text-[10px] font-mono text-slate-300 bg-white/3 p-3 border border-white/5 whitespace-pre-wrap leading-relaxed">{traces[agent.id]}</pre>
+          <div className="mt-2 text-xs font-mono text-slate-600 space-y-1">
             <div className="flex justify-between"><span>Entropy Array:</span><span className="text-slate-300">[0.82, 0.45, 0.91, 0.12]</span></div>
             <div className="flex justify-between"><span>Propagation Mode:</span><span className="text-slate-300">{isHighDrift ? 'Non-linear' : 'Linear'}</span></div>
           </div>
@@ -255,9 +255,9 @@ const InspectionDrawer = ({ agent, results, isHighDrift }) => {
         {/* Interpretability */}
         <div>
           <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
-            <BrainCircuit size={10} className="text-slate-500"/><span className="text-[8px] font-mono uppercase tracking-widest text-slate-500">Interpretability Engine</span>
+            <BrainCircuit size={10} className="text-slate-500"/><span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Interpretability Engine</span>
           </div>
-          <div className="bg-white/3 p-3 border border-white/5 space-y-3 text-[8px] font-mono">
+          <div className="bg-white/3 p-3 border border-white/5 space-y-3 text-[10px] font-mono">
             <div>
               <span className="text-slate-500 uppercase tracking-widest block mb-1">Theory Dominance</span>
               <span className="text-white border-l border-white/20 pl-2 block">{agent.theoryDominance}</span>
@@ -275,9 +275,9 @@ const InspectionDrawer = ({ agent, results, isHighDrift }) => {
         {/* Telemetry */}
         <div>
           <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
-            <Network size={10} className="text-slate-500"/><span className="text-[8px] font-mono uppercase tracking-widest text-slate-500">System Telemetry</span>
+            <Network size={10} className="text-slate-500"/><span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">System Telemetry</span>
           </div>
-          <div className="bg-white/3 p-3 border border-white/5 space-y-2 text-[8px] font-mono text-slate-500">
+          <div className="bg-white/3 p-3 border border-white/5 space-y-2 text-[10px] font-mono text-slate-500">
             {[
               ['Memory Traffic', `${(Math.random()*50+20).toFixed(1)} MB/s`],
               ['Orch. Pressure', isHighDrift ? 'ELEVATED' : 'NOMINAL'],
@@ -290,7 +290,7 @@ const InspectionDrawer = ({ agent, results, isHighDrift }) => {
               </div>
             ))}
             <div className="pt-2">
-              <span className="text-slate-600 uppercase block mb-2 text-[7px]">Cached Semantic Vectors</span>
+              <span className="text-slate-600 uppercase block mb-2 text-xs">Cached Semantic Vectors</span>
               <div className="flex gap-[2px] flex-wrap">
                 {[...Array(28)].map((_, i) => (
                   <div key={i} className={`w-[2px] h-2 ${Math.random() > 0.75 ? (isHighDrift ? 'bg-rose-500' : 'bg-white') : 'bg-white/8'}`}/>
@@ -318,7 +318,7 @@ const AgentPipeline = ({ results }) => {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-1">
           <Activity size={10} className="text-slate-600"/>
-          <span className="font-mono text-[8px] tracking-[0.2em] uppercase text-slate-600">Distributed Explainable AI Semantic Cognition Network</span>
+          <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-slate-600">Distributed Explainable AI Semantic Cognition Network</span>
         </div>
         <h2 className="text-lg font-mono text-white tracking-[0.1em] uppercase">Inference Module Network</h2>
       </div>
@@ -328,11 +328,11 @@ const AgentPipeline = ({ results }) => {
           <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
             <div className="flex items-center gap-2">
               <Layers size={12} className="text-slate-500"/>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-white">Computational Timeline & Profiler</span>
+              <span className="text-xs font-mono uppercase tracking-widest text-white">Computational Timeline & Profiler</span>
             </div>
-            {results?.runtime_seconds && <span className="text-[8px] font-mono text-slate-500 border border-white/8 px-2 py-1">Sync: {results.runtime_seconds}s</span>}
+            {results?.runtime_seconds && <span className="text-[10px] font-mono text-slate-500 border border-white/8 px-2 py-1">Sync: {results.runtime_seconds}s</span>}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5 text-[8px] font-mono">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5 text-[10px] font-mono">
             {[
               ['Input Complexity', isHighDrift ? 'High Volatility' : 'Nominal'],
               ['Target Domain', plan.domain || 'Academic'],
@@ -347,14 +347,14 @@ const AgentPipeline = ({ results }) => {
           </div>
           {/* Execution Rail */}
           <div className="relative pt-2">
-            <span className="text-[7px] font-mono text-slate-600 uppercase tracking-widest block mb-4">Live Execution Rail</span>
+            <span className="text-xs font-mono text-slate-600 uppercase tracking-widest block mb-4">Live Execution Rail</span>
             <div className="flex items-center justify-between relative">
               <div className="absolute left-0 w-full h-[1px] bg-white/8 top-1/2 -translate-y-1/2"/>
               {[['00.012s','Normalization'],['00.842s','Pragmatic Map'],[isHighDrift?'01.2s':'01.9s',isHighDrift?'Drift Detected':'Semantic Parse'],['02.4s','Register Sync'],['03.1s','Arbitration']].map(([t,s],i)=>(
                 <div key={i} className="relative z-10 flex flex-col items-center gap-2">
                   <div className={`w-[3px] h-[3px] rounded-full ${isHighDrift&&i>=2?'bg-rose-500':'bg-white'}`}/>
-                  <span className="text-[7px] font-mono text-slate-500 bg-black px-1">[{t}]</span>
-                  <span className="absolute top-5 text-[7px] font-mono text-slate-600 uppercase whitespace-nowrap">{s}</span>
+                  <span className="text-xs font-mono text-slate-500 bg-black px-1">[{t}]</span>
+                  <span className="absolute top-5 text-xs font-mono text-slate-600 uppercase whitespace-nowrap">{s}</span>
                 </div>
               ))}
             </div>
@@ -363,7 +363,7 @@ const AgentPipeline = ({ results }) => {
           <AnimatePresence>
             {conflictLog && (
               <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
-                className="mt-3 pt-3 border-t border-rose-500/20 text-[8px] font-mono text-amber-500 tracking-widest uppercase flex items-center gap-2">
+                className="mt-3 pt-3 border-t border-rose-500/20 text-[10px] font-mono text-amber-500 tracking-widest uppercase flex items-center gap-2">
                 <ShieldAlert size={10} className="animate-pulse"/>{conflictLog}
               </motion.div>
             )}
@@ -394,8 +394,8 @@ const AgentPipeline = ({ results }) => {
 
       {/* Theory Arbitration Log */}
       <div className="border-l border-white/10 pl-4 py-2 mt-8">
-        <h4 className="font-mono text-[8px] text-slate-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Terminal size={10}/>Theory Arbitration Logs</h4>
-        <div className="font-mono text-[8px] text-slate-600 space-y-[3px]">
+        <h4 className="font-mono text-[10px] text-slate-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Terminal size={10}/>Theory Arbitration Logs</h4>
+        <div className="font-mono text-[10px] text-slate-600 space-y-[3px]">
           <p>[ARBITRATION] Initialization sequence complete.</p>
           {isHighDrift ? (
             <>
