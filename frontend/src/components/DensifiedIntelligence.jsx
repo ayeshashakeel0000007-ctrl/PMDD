@@ -259,12 +259,15 @@ const SemanticEvolutionTopology = memo(({ results, isHighDrift }) => {
 // ── 5. Densified Semantic Topology Network ──
 const sanitizeToken = (token) => {
   if (!token) return null;
-  const t = token.toLowerCase();
+  let t = String(token).toLowerCase();
   const blacklisted = ['confucius', 'sloking', 'upper soul', 'placeholder', 'null'];
   if (blacklisted.some(b => t.includes(b))) return null;
-  if (/[^a-zA-Z0-9\s\-]/.test(token)) return null;
-  if (token.length > 30 || token.length < 2) return null;
-  return token;
+  t = t.replace(/[^a-zA-Z0-9\s\-]/g, '').trim();
+  if (t.length > 30) {
+      t = t.split(/\s+/).slice(0, 3).join(' ');
+  }
+  if (t.length < 2) return null;
+  return t;
 };
 
 // Deterministic hashing for stable layout
