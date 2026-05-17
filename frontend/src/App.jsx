@@ -10,7 +10,6 @@ import TheoryTraceabilityMatrix from './components/TheoryTraceabilityMatrix';
 import DensifiedIntelligence from './components/DensifiedIntelligence';
 import { useResonance } from './context/SemanticResonanceContext';
 import { useWorkspace } from './context/ResearchWorkspaceContext';
-import html2pdf from 'html2pdf.js';
 import { saveAs } from 'file-saver';
 import './index.css';
 
@@ -137,8 +136,9 @@ function App() {
     setTimeout(() => { if(scrollRef.current) scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
   };
 
-  const exportPDF = () => {
+  const exportPDF = async () => {
     if(!containerRef.current) return;
+    const html2pdf = (await import('html2pdf.js')).default;
     const opt = { margin: [0.5, 0.5, 0.5, 0.5], filename: 'PMDD_Research_Report.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }};
     html2pdf().set(opt).from(containerRef.current).save();
   };
