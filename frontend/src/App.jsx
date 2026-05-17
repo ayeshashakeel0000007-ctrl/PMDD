@@ -96,7 +96,12 @@ const MeaningRiver = memo(({ data }) => {
 });
 
 const MiniCard = ({ title, value, color, desc, highlight }) => {
-  const variance = useMemo(() => (Math.random() * 0.05).toFixed(3), [value]);
+  const variance = useMemo(() => {
+    // Generate a pseudo-random but stable variance based on the value string length or hash
+    const valStr = String(value);
+    const hash = valStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return ((hash % 5) * 0.01).toFixed(3);
+  }, [value]);
   return (
   <div className={`glass-panel p-5 flex flex-col justify-between hover-glow group border-l-2 transition-all ${highlight ? 'animate-pulse bg-white/5 border-white/30' : ''}`} style={{borderLeftColor: color}}>
      <div className="text-[0.65rem] font-mono uppercase tracking-[0.2em] text-slate-500 mb-2">{title}</div>
@@ -307,7 +312,7 @@ function App() {
                               {riskScore < 40 ? 'Discourse trajectory remains aligned with baseline communicative intent.' : riskScore < 75 ? 'Emerging semantic shift detected. Minor deviations from institutional baseline.' : 'Discourse trajectory deviates significantly from baseline communicative intent.'}
                            </p>
                            <div className="text-[10px] font-mono tracking-[0.2em] uppercase text-slate-500 mt-4 flex items-center gap-2">
-                              Var: ±{(Math.random() * 2).toFixed(2)}% | <Activity size={10} className="inline"/> Realtime Telemetry
+                              Var: ±0.87% | <Activity size={10} className="inline"/> Realtime Telemetry
                            </div>
                         </div>
                      </div>
