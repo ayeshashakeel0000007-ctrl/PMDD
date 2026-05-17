@@ -250,7 +250,7 @@ function App() {
         </AnimatePresence>
 
         <footer className="mt-32 pb-16 text-center">
-            <h3 className="text-white/80 font-serif italic text-2xl footer-glow uppercase tracking-[0.2em]">Made by Ayesha Sheikh</h3>
+            <h3 className="text-white font-serif italic text-2xl footer-glow uppercase tracking-[0.2em] animate-pulse">Made by Ayesha Shakeel</h3>
         </footer>
       </main>
     </div>

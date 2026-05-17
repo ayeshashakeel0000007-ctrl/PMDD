@@ -250,49 +250,70 @@ const KeywordTopology = memo(({ results }) => {
     seg.pragmatics?.speech_acts?.forEach(act=>{
       const cleanWord = sanitizeToken(act.evidence);
       if(!cleanWord) return;
-      keywords.push({ id: `k-p-${sIdx}`, word:cleanWord, cat:act.category, conf:act.confidence, type: 'prag' });
+      keywords.push({ id: `k-p-${sIdx}`, word:cleanWord, cat:act.category, conf:act.confidence, type: 'prag', clause: sIdx + 1 });
     });
     seg.semantics?.semantic_fields?.slice(0,2).forEach(f=>{
       const cleanWord = sanitizeToken(f.word);
       if(!cleanWord) return;
-      keywords.push({ id: `k-s-${sIdx}`, word:cleanWord, cat:f.field, conf:0.85, type: 'sem' });
+      keywords.push({ id: `k-s-${sIdx}`, word:cleanWord, cat:f.field, conf:0.85, type: 'sem', clause: sIdx + 1 });
     });
   });
 
   const uniqueKw = Array.from(new Map(keywords.map(item => [item.word, item])).values()).slice(0, 40);
 
   return (
-    <div className="bg-black/40 border border-white/8 p-8 mt-8 relative overflow-hidden glass-panel hover-glow">
-      <div className="flex items-center gap-3 mb-6 border-b border-white/8 pb-4">
-        <Network size={18} className="text-holo-cyan"/>
-        <h3 className="font-mono text-xl text-white uppercase tracking-[0.15em]">Lexical Topology Network</h3>
+    <div className="bg-black/40 border border-white/8 p-10 mt-12 relative overflow-hidden glass-panel hover-glow">
+      <div className="flex items-center gap-4 mb-8 border-b border-white/8 pb-6">
+        <Network size={24} className="text-holo-cyan animate-pulse"/>
+        <div>
+           <h3 className="font-mono text-2xl text-white uppercase tracking-[0.2em]">Semantic Keyword Topology Engine</h3>
+           <p className="text-xs text-slate-500 font-mono mt-2 uppercase tracking-widest">Deterministic Linguistic Clustering & Propagation Links</p>
+        </div>
       </div>
-      {uniqueKw.length === 0 && <p className="text-slate-600 font-mono text-sm">No lexical nodes extracted.</p>}
+      {uniqueKw.length === 0 && <p className="text-slate-600 font-mono text-base">No lexical nodes extracted.</p>}
       
-      <div className="relative w-full h-[400px]">
+      <div className="relative w-full h-[500px]">
          <svg width="100%" height="100%" className="absolute inset-0">
-            {/* Draw lines between nodes of same type */}
+            {/* Draw flowing propagation links between nodes of same category */}
             {uniqueKw.map((kw, i) => {
                if (i === 0) return null;
-               const prev = uniqueKw[i-1];
-               if (prev.type === kw.type) {
-                  return <line key={`l-${i}`} x1={`${(i*13)%90 + 5}%`} y1={`${(i*27)%90 + 5}%`} x2={`${((i-1)*13)%90 + 5}%`} y2={`${((i-1)*27)%90 + 5}%`} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />;
+               const prev = uniqueKw.slice(0, i).find(k => k.cat === kw.cat);
+               if (prev) {
+                  const x1 = `${(uniqueKw.indexOf(prev)*17)%80 + 10}%`;
+                  const y1 = `${(uniqueKw.indexOf(prev)*31)%80 + 10}%`;
+                  const x2 = `${(i*17)%80 + 10}%`;
+                  const y2 = `${(i*31)%80 + 10}%`;
+                  return (
+                     <g key={`l-${i}`}>
+                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="4 4" />
+                        <circle cx={x1} cy={y1} r="2" fill="rgba(255,255,255,0.5)" />
+                     </g>
+                  );
                }
                return null;
             })}
          </svg>
          
          {uniqueKw.map((kw, i) => {
-            const isDir = kw.cat === 'Directive' || kw.type === 'prag';
-            const col = isDir ? 'border-rose-500/50 text-rose-400 bg-rose-500/10' : 'border-holo-cyan/40 text-holo-cyan bg-holo-cyan/5';
+            const isDir = kw.cat === 'Directive' || kw.cat === 'COERCION' || kw.type === 'prag';
+            const col = isDir ? 'border-rose-500 text-rose-400 bg-rose-950/40 shadow-[0_0_15px_rgba(244,63,94,0.3)]' : 'border-holo-cyan text-holo-cyan bg-cyan-950/40 shadow-[0_0_15px_rgba(0,240,255,0.2)]';
+            const badgeCol = isDir ? 'bg-rose-500 text-white' : 'bg-holo-cyan text-black';
+            
             return (
-               <div key={kw.id} className={`absolute group cursor-crosshair px-3 py-1 text-xs font-mono border backdrop-blur-sm transition-transform hover:scale-110 hover:z-50 ${col}`}
-                    style={{ left: `${(i*13)%90 + 5}%`, top: `${(i*27)%90 + 5}%` }}>
+               <div key={kw.id} className={`absolute group cursor-crosshair px-4 py-2 text-sm md:text-base font-mono border backdrop-blur-md transition-all duration-300 hover:scale-125 hover:z-50 ${col}`}
+                    style={{ left: `${(i*17)%80 + 10}%`, top: `${(i*31)%80 + 10}%` }}>
                   {kw.word}
-                  <div className="absolute top-full left-0 mt-2 w-48 bg-black/90 border border-white/20 p-3 hidden group-hover:flex flex-col gap-2 z-50 text-[10px] font-mono shadow-2xl">
-                     <div className="text-white font-bold tracking-widest uppercase border-b border-white/10 pb-1">{kw.word}</div>
-                     <div className="flex justify-between"><span className="text-slate-500">Category:</span><span>{kw.cat}</span></div>
-                     <div className="flex justify-between"><span className="text-slate-500">Confidence:</span><span>{(kw.conf*100).toFixed(1)}%</span></div>
+                  <div className={`absolute -top-3 -right-3 text-[9px] font-bold px-1.5 py-0.5 rounded-sm ${badgeCol}`}>
+                     {(kw.conf*100).toFixed(0)}%
+                  </div>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 bg-black/95 border border-white/30 p-4 hidden group-hover:flex flex-col gap-3 z-50 text-xs font-mono shadow-2xl rounded-sm">
+                     <div className="text-white font-bold tracking-widest uppercase border-b border-white/20 pb-2 text-lg">{kw.word}</div>
+                     <div className="flex justify-between items-center"><span className="text-slate-500">Rhetorical Cat:</span><span className={`px-2 py-1 bg-white/5 border border-white/10 ${isDir ? 'text-rose-400' : 'text-holo-cyan'}`}>{kw.cat}</span></div>
+                     <div className="flex justify-between items-center"><span className="text-slate-500">Semantic Weight:</span><span>{(kw.conf*100).toFixed(1)}%</span></div>
+                     <div className="flex justify-between items-center"><span className="text-slate-500">Clause Origin:</span><span className="text-slate-300 bg-white/10 px-2 rounded">#{kw.clause}</span></div>
+                     <p className="text-[10px] text-slate-400 mt-2 border-t border-white/10 pt-2">
+                        {isDir ? 'High-leverage directive token indicating rhetorical pressure.' : 'Descriptive semantic token establishing context.'}
+                     </p>
                   </div>
                </div>
             );

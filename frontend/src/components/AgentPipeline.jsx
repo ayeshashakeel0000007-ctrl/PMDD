@@ -221,9 +221,15 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
       {agent.id < 5 && (
         <div className="absolute top-[40%] -right-3 w-6 h-[2px] -translate-y-1/2 overflow-hidden bg-white/5 z-20 hidden md:block">
           {isActive && (
-            <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }}
-              transition={{ duration: 0.4, repeat: Infinity, ease: 'linear' }}
-              className={`absolute top-0 h-full w-full bg-gradient-to-r from-transparent via-${isConflict ? 'amber-500' : 'holo-cyan'} to-transparent`} />
+            <>
+              <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }}
+                transition={{ duration: 0.4, repeat: Infinity, ease: 'linear' }}
+                className={`absolute top-0 h-full w-full bg-gradient-to-r from-transparent via-${isConflict ? 'amber-500' : 'holo-cyan'} to-transparent`} />
+              
+              <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }}
+                transition={{ duration: 0.6, repeat: Infinity, ease: 'linear', delay: 0.2 }}
+                className={`absolute top-0 h-full w-1/2 bg-gradient-to-r from-transparent via-white to-transparent blur-[1px] opacity-70`} />
+            </>
           )}
         </div>
       )}
@@ -321,8 +327,21 @@ const AgentPipeline = ({ results }) => {
   const isHighDrift = resonanceState.intensityMultiplier > 1.5;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative border border-white/5 glass-panel mt-12">
-      <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-white/15 via-white/5 to-white/15" />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative border border-white/5 glass-panel mt-12 overflow-hidden group">
+      {/* Dynamic Background Particles */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
+         {[...Array(15)].map((_, i) => (
+           <motion.div key={i} className="absolute w-1 h-1 bg-holo-cyan rounded-full"
+             initial={{ x: Math.random() * 1000, y: Math.random() * 500, opacity: 0 }}
+             animate={{ x: Math.random() * 1000, y: Math.random() * 500, opacity: [0, 1, 0] }}
+             transition={{ duration: Math.random() * 10 + 10, repeat: Infinity, ease: 'linear' }} />
+         ))}
+      </div>
+      <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-transparent via-holo-cyan to-transparent opacity-30 group-hover:opacity-100 transition-opacity duration-1000 animate-pulse" />
+      
+      {/* Travelling Synchronization Pulse */}
+      <motion.div className="absolute top-0 left-0 w-[2px] h-32 bg-white blur-[2px] opacity-50"
+         animate={{ y: ['-100%', '800%'] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
 
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-1">
