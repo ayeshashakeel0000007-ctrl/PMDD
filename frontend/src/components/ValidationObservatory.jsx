@@ -17,7 +17,48 @@ const ValidationObservatory = ({ results }) => {
    
    const handleExport = (format) => {
        setIsExporting(true);
-       setTimeout(() => setIsExporting(false), 1500); // Simulate export
+       
+       setTimeout(() => {
+          if (format === 'json') {
+             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(results, null, 2));
+             const a = document.createElement('a');
+             a.setAttribute("href", dataStr);
+             a.setAttribute("download", "pmdd_export.json");
+             document.body.appendChild(a);
+             a.click();
+             a.remove();
+          } else if (format === 'csv') {
+             const mathScores = results?.final_output?.math_scores || {};
+             const headers = "Metric,Value\n";
+             const rows = Object.entries(mathScores).map(([k, v]) => `${k},${v}`).join("\n");
+             const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(headers + rows);
+             const a = document.createElement('a');
+             a.setAttribute("href", csvContent);
+             a.setAttribute("download", "pmdd_metrics.csv");
+             document.body.appendChild(a);
+             a.click();
+             a.remove();
+          } else if (format === 'md') {
+             let mdContent = `# PMDD Observatory Export\n\n`;
+             mdContent += `## 1. Summary\n${results?.final_output?.synthesis || narrative || 'N/A'}\n\n`;
+             mdContent += `## 2. Math Scores\n\n| Metric | Value |\n|---|---|\n`;
+             Object.entries(results?.final_output?.math_scores || {}).forEach(([k, v]) => {
+               mdContent += `| ${k} | ${typeof v === 'number' ? v.toFixed(3) : v} |\n`;
+             });
+             const dataStr = "data:text/markdown;charset=utf-8," + encodeURIComponent(mdContent);
+             const a = document.createElement('a');
+             a.setAttribute("href", dataStr);
+             a.setAttribute("download", "pmdd_analysis.md");
+             document.body.appendChild(a);
+             a.click();
+             a.remove();
+          } else if (format === 'pdf') {
+             window.print();
+          } else if (format === 'docx') {
+             alert("DOCX export requires server-side processing. Please use Markdown or PDF format.");
+          }
+          setIsExporting(false);
+       }, 600);
    };
 
    return (
