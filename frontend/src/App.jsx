@@ -14,33 +14,6 @@ import html2pdf from 'html2pdf.js';
 import { saveAs } from 'file-saver';
 import './index.css';
 
-const ResearcherOverlay = ({ data, active }) => {
-   if (!active || !data) return null;
-   const math = data.final_output?.math_scores || {};
-   return (
-      <div className="absolute inset-0 z-40 bg-obsidian/95 backdrop-blur-xl p-8 overflow-y-auto font-mono text-[10px] text-holo-cyan mix-blend-screen pointer-events-auto">
-         <div className="flex items-center gap-4 mb-8 border-b border-holo-cyan/20 pb-4">
-            <Binary className="animate-pulse" size={24}/>
-            <h2 className="text-xl tracking-[0.3em] uppercase">Deep Inspection Mode</h2>
-         </div>
-         <div className="grid grid-cols-2 gap-8">
-            <div className="bg-black/50 p-4 border border-holo-cyan/10">
-               <h3 className="text-white mb-4 tracking-widest uppercase">Global Tensors</h3>
-               <pre className="text-slate-400 overflow-x-auto">{JSON.stringify(math, null, 2)}</pre>
-            </div>
-            <div className="bg-black/50 p-4 border border-holo-cyan/10">
-               <h3 className="text-white mb-4 tracking-widest uppercase">Orchestration Trace</h3>
-               <pre className="text-slate-400 overflow-x-auto">{JSON.stringify(data.execution_plan, null, 2)}</pre>
-            </div>
-            <div className="bg-black/50 p-4 border border-holo-cyan/10 col-span-2">
-               <h3 className="text-white mb-4 tracking-widest uppercase">Clause Vector Array</h3>
-               <pre className="text-slate-400 overflow-x-auto max-h-96">{JSON.stringify(data.segments, null, 2)}</pre>
-            </div>
-         </div>
-      </div>
-   );
-};
-
 const SemanticConstellation = memo(({ data }) => {
   const { resonanceState } = useResonance();
   const intensity = resonanceState.intensityMultiplier;
@@ -110,12 +83,12 @@ const MeaningRiver = memo(({ data }) => {
          <motion.circle key={i} r={isHighDrift ? "4" : "2"} fill="#fff" filter="blur(1px)" initial={{ offsetDistance: '0%' }} animate={{ offsetDistance: '100%' }} transition={{ duration: flowDuration + Math.random(), repeat: Infinity, delay: i * 0.2, ease: 'linear' }} style={{ offsetPath: isHighDrift && i % 2 === 0 ? "path('M 150 100 Q 200 180, 250 50 T 450 150')" : "path('M -50 100 Q 100 20, 200 100 T 450 100')" }} className="paper-mode-fill-black"/>
        ))}
     </svg>
-    <div className="absolute top-0 left-4 h-full flex flex-col justify-between py-12 text-[10px] font-mono text-slate-500 uppercase tracking-widest paper-mode-text-gray">
+    <div className="absolute top-0 left-4 h-full flex flex-col justify-between py-12 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
       <span>Information Base</span><span>Nominal Fluid</span>
     </div>
     <div className="absolute top-0 right-4 h-full flex flex-col justify-between py-12 text-[10px] font-mono text-right uppercase tracking-widest">
-      <span className="text-white paper-mode-text-black">Formal Vector</span>
-      <span className={`${isHighDrift ? 'text-rose-400 font-bold' : 'text-slate-500 paper-mode-text-gray'}`}>Contamination Zone</span>
+      <span className="text-white">Formal Vector</span>
+      <span className={`${isHighDrift ? 'text-rose-400 font-bold' : 'text-slate-500'}`}>Contamination Zone</span>
     </div>
   </div>
   );
@@ -123,9 +96,9 @@ const MeaningRiver = memo(({ data }) => {
 
 const MiniCard = ({ title, value, color, desc, highlight }) => (
   <div className={`glass-panel p-5 flex flex-col justify-between hover-glow group border-l-2 transition-all ${highlight ? 'animate-pulse bg-white/5 border-white/30' : ''}`} style={{borderLeftColor: color}}>
-     <div className="text-[0.65rem] font-mono uppercase tracking-[0.2em] text-slate-500 mb-2 paper-mode-text-gray">{title}</div>
-     <div className="text-3xl font-light tracking-widest font-mono paper-mode-text-black" style={{color}}>{value}</div>
-     <div className="text-[10px] text-slate-600 mt-3 border-t border-white/5 pt-2 uppercase font-mono tracking-widest paper-mode-border-sub paper-mode-text-gray">
+     <div className="text-[0.65rem] font-mono uppercase tracking-[0.2em] text-slate-500 mb-2">{title}</div>
+     <div className="text-3xl font-light tracking-widest font-mono" style={{color}}>{value}</div>
+     <div className="text-[10px] text-slate-600 mt-3 border-t border-white/5 pt-2 uppercase font-mono tracking-widest">
        {desc} <span className="float-right text-[8px] text-slate-700">±{(Math.random() * 0.05).toFixed(3)}</span>
      </div>
   </div>
@@ -138,8 +111,7 @@ function App() {
   const { savedSnapshots, saveSnapshot, comparisonTarget, setComparisonTarget } = useWorkspace();
   const [appState, setAppState] = useState('hero');
   const [analysisResults, setAnalysisResults] = useState(null);
-  const [researcherMode, setResearcherMode] = useState(false);
-  const [paperMode, setPaperMode] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
   const scrollRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -177,6 +149,44 @@ function App() {
      saveAs(blob, "PMDD_Computational_Trace.json");
   };
 
+  const exportMarkdown = () => {
+    if(!analysisResults) return;
+    let md = `# PMDD Research Report\n\n`;
+    md += `## Final Math Scores\n\`\`\`json\n${JSON.stringify(analysisResults.final_output?.math_scores || {}, null, 2)}\n\`\`\`\n\n`;
+    md += `## Segments\n`;
+    analysisResults.segments?.forEach((seg, i) => {
+      md += `### Clause ${i+1}: "${seg.text}"\n`;
+      md += `- Pragmatic Confidence: ${seg.pragmatics?.confidence}\n`;
+      md += `- Syntactic Depth: ${seg.syntax?.depth}\n\n`;
+    });
+    const blob = new Blob([md], { type: "text/markdown" });
+    saveAs(blob, "PMDD_Report.md");
+  };
+
+  const exportCSV = () => {
+    if(!analysisResults || !analysisResults.segments) return;
+    let csv = "Clause,Text,Confidence,Drift_Risk\n";
+    analysisResults.segments.forEach((seg, i) => {
+      const conf = seg.pragmatics?.confidence || 1;
+      const drift = ((1 - conf) * 100).toFixed(1);
+      csv += `${i+1},"${(seg.text||'').replace(/"/g, '""')}",${conf},${drift}\n`;
+    });
+    const blob = new Blob([csv], { type: "text/csv" });
+    saveAs(blob, "PMDD_Report.csv");
+  };
+
+  const exportDOCX = () => {
+     if(!analysisResults) return;
+     const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><style>body{font-family:sans-serif;}</style></head><body>";
+     const footer = "</body></html>";
+     let content = `<h1>PMDD Research Report</h1><p>Generated by Pragmatic Meaning Drift Detector</p><hr/>`;
+     analysisResults.segments?.forEach((seg, i) => {
+       content += `<h3>Clause ${i+1}: ${seg.text}</h3><ul><li>Confidence: ${seg.pragmatics?.confidence}</li><li>Depth: ${seg.syntax?.depth}</li></ul>`;
+     });
+     const blob = new Blob([header + content + footer], { type: 'application/msword' });
+     saveAs(blob, "PMDD_Report.doc");
+  };
+
   const handleSaveToWorkspace = () => {
      if (analysisResults) saveSnapshot(analysisResults, { name: `Analysis ${new Date().toLocaleTimeString()}` });
   };
@@ -189,40 +199,33 @@ function App() {
   const compareData = savedSnapshots.find(s => s.id === comparisonTarget)?.results;
 
   return (
-    <div className={`min-h-screen relative overflow-x-hidden text-slate-300 font-sans tracking-wide ${paperMode ? 'paper-mode' : ''}`}>
+    <div className={`min-h-screen relative overflow-x-hidden text-slate-300 font-sans tracking-wide ${demoMode ? 'demo-mode-active' : ''}`}>
       <div className={`obs-bg transition-opacity duration-1000 ${isHighDrift ? 'opacity-50' : 'opacity-20'}`} />
       <div className={`ambient-fog transition-opacity duration-1000`} style={{opacity: stabilizing ? 0.05 : (isHighDrift ? 0.03 : 0.01)}} />
       <div className={`scanline ${isHighDrift ? 'animate-scan-fast' : 'animate-scan'}`} />
+      <div className="atmospheric-waves"></div>
       
-      {!paperMode && <TelemetryOverlay />}
-      <ResearcherOverlay data={analysisResults} active={researcherMode} />
+      <TelemetryOverlay />
 
-      <nav className="sticky top-0 z-50 h-16 bg-obsidian/95 border-b border-white/10 flex items-center justify-between px-8 paper-mode-bg-white paper-mode-border-sub print:hidden transition-colors">
+      <nav className="sticky top-0 z-50 h-16 bg-obsidian/95 border-b border-white/10 flex items-center justify-between px-8 print:hidden transition-colors">
         <div className="flex items-center space-x-4">
-           <div className={`w-8 h-8 flex items-center justify-center border transition-colors ${isHighDrift ? 'bg-rose-500/10 text-rose-500 border-rose-500/50' : 'bg-white/5 text-white border-white/20'} paper-mode-bg-white paper-mode-text-black paper-mode-border-black`}><Globe size={18} className={isHighDrift ? 'animate-spin' : 'animate-spin-slow'}/></div>
-           <h1 className="text-white font-mono tracking-[0.3em] m-0 text-xs uppercase paper-mode-text-black">Classified Linguistic Observatory</h1>
+           <div className={`w-8 h-8 flex items-center justify-center border transition-colors ${isHighDrift ? 'bg-rose-500/10 text-rose-500 border-rose-500/50' : 'bg-white/5 text-white border-white/20'}`}><Globe size={18} className={isHighDrift ? 'animate-spin' : 'animate-spin-slow'}/></div>
+           <h1 className="text-white font-mono tracking-[0.3em] m-0 text-xs uppercase">Classified Linguistic Observatory</h1>
         </div>
         <div className="flex items-center space-x-6">
            {savedSnapshots.length > 0 && (
-              <select onChange={e => setComparisonTarget(e.target.value)} value={comparisonTarget || ""} className="bg-transparent border border-white/20 text-slate-300 text-[10px] font-mono p-1 uppercase paper-mode-text-black paper-mode-border-black focus:outline-none">
+              <select onChange={e => setComparisonTarget(e.target.value)} value={comparisonTarget || ""} className="bg-transparent border border-white/20 text-slate-300 text-[10px] font-mono p-1 uppercase focus:outline-none transition-opacity duration-500" style={{opacity: demoMode ? 0.2 : 1}}>
                  <option value="">-- No Comparison --</option>
                  {savedSnapshots.map(s => <option key={s.id} value={s.id}>Compare: {s.metadata.name}</option>)}
               </select>
            )}
-           <button onClick={() => setPaperMode(!paperMode)} className={`flex items-center gap-2 text-[10px] font-mono border px-3 py-1 rounded transition-colors ${paperMode ? 'bg-slate-200 text-slate-800 border-slate-300' : 'border-white/20 text-slate-400 hover:text-white'}`}>
-              <BookOpen size={12}/> {paperMode ? 'EXIT PAPER MODE' : 'PAPER MODE'}
+           <button onClick={() => setDemoMode(!demoMode)} className={`flex items-center gap-2 text-[10px] font-mono border px-3 py-1 rounded transition-colors ${demoMode ? 'bg-white text-black border-white animate-pulse' : 'border-white/20 text-slate-400 hover:text-white'}`}>
+              <Layers size={12}/> {demoMode ? 'EXIT DEMO MODE' : 'DEMO MODE'}
            </button>
-           {!paperMode && (
-              <button onClick={() => setResearcherMode(!researcherMode)} className={`flex items-center gap-2 text-[10px] font-mono border px-3 py-1 rounded transition-colors ${researcherMode ? 'bg-holo-cyan text-obsidian border-holo-cyan' : 'border-white/20 text-slate-400 hover:text-white'}`}>
-                 <SearchCode size={12}/> {researcherMode ? 'EXIT DEEP INSPECTION' : 'RESEARCHER MODE'}
-              </button>
-           )}
-           {!paperMode && (
-              <div className="flex items-center space-x-3 text-[10px] font-mono">
-                 <span className={`font-bold tracking-[0.2em] ${stabilizing ? 'animate-pulse text-amber-500' : ''}`} style={{color: stabilizing ? undefined : riskColor}}>{systemStatus}</span>
-                 <div className="ecg-mini"><svg viewBox="0 0 100 20"><path className="ecg-mini-line" stroke={riskColor} style={{animationDuration: stabilizing ? '1s' : (isHighDrift ? '0.5s' : '2s')}} d="M0 10 L30 10 L40 2 L50 18 L60 10 L100 10" /></svg></div>
-              </div>
-           )}
+           <div className="flex items-center space-x-3 text-[10px] font-mono transition-opacity duration-500" style={{opacity: demoMode ? 0 : 1}}>
+              <span className={`font-bold tracking-[0.2em] ${stabilizing ? 'animate-pulse text-amber-500' : ''}`} style={{color: stabilizing ? undefined : riskColor}}>{systemStatus}</span>
+              <div className="ecg-mini"><svg viewBox="0 0 100 20"><path className="ecg-mini-line" stroke={riskColor} style={{animationDuration: stabilizing ? '1s' : (isHighDrift ? '0.5s' : '2s')}} d="M0 10 L30 10 L40 2 L50 18 L60 10 L100 10" /></svg></div>
+           </div>
         </div>
       </nav>
 
@@ -260,46 +263,61 @@ function App() {
             <motion.div ref={scrollRef} initial={{opacity:0, filter:'blur(10px)'}} animate={{opacity:1, filter:'blur(0px)'}} transition={{duration: 1.5}} className="flex flex-col gap-12 pb-32">
               <div ref={containerRef} className="flex flex-col gap-12">
                   
-                  {paperMode && (
-                     <div className="text-center mb-8 border-b border-slate-300 pb-8 print:block">
-                        <h1 className="text-4xl font-serif text-slate-900 mb-4">Computational Analysis of Pragmatic Discourse Drift</h1>
-                        <p className="text-sm font-mono text-slate-600 uppercase tracking-widest">Generated via PMDD Research Ecosystem • {new Date().toLocaleDateString()}</p>
-                     </div>
-                  )}
-
                   <div className="flex justify-between items-center gap-4 print:hidden">
-                     <button onClick={handleSaveToWorkspace} className="export-btn paper-mode-bg-white paper-mode-text-black paper-mode-border-black hover:bg-white/10"><Save size={14}/> SAVE SNAPSHOT</button>
-                     <div className="flex gap-4">
-                        <button onClick={exportPDF} className="export-btn paper-mode-bg-white paper-mode-text-black paper-mode-border-black hover:bg-white/10"><FileText size={14}/> EXPORT PDF</button>
-                        <button onClick={exportJSON} className="export-btn paper-mode-bg-white paper-mode-text-black paper-mode-border-black hover:bg-white/10"><Binary size={14}/> RAW JSON</button>
+                     <button onClick={handleSaveToWorkspace} className="export-btn hover:bg-white/10"><Save size={14}/> SAVE SNAPSHOT</button>
+                     <div className="flex gap-2 flex-wrap justify-end">
+                        <button onClick={exportPDF} className="export-btn hover:bg-white/10 text-[10px] px-2 py-1"><FileText size={12}/> PDF</button>
+                        <button onClick={exportDOCX} className="export-btn hover:bg-white/10 text-[10px] px-2 py-1"><FileText size={12}/> DOCX</button>
+                        <button onClick={exportJSON} className="export-btn hover:bg-white/10 text-[10px] px-2 py-1"><Binary size={12}/> JSON</button>
+                        <button onClick={exportCSV} className="export-btn hover:bg-white/10 text-[10px] px-2 py-1"><FileText size={12}/> CSV</button>
+                        <button onClick={exportMarkdown} className="export-btn hover:bg-white/10 text-[10px] px-2 py-1"><FileText size={12}/> MD</button>
                      </div>
                   </div>
 
-                  {!paperMode && <AgentPipeline results={analysisResults} />}
+                  <AgentPipeline results={analysisResults} />
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                     <div className="glass-panel p-8 col-span-1 md:col-span-2 flex flex-col justify-center relative">
-                        <div className="absolute top-0 right-0 p-6 opacity-10 paper-mode-text-black" style={{color: paperMode ? '#1a1a1a' : riskColor}}><ShieldAlert size={100}/></div>
-                        <div className="text-[0.65rem] font-mono text-slate-500 uppercase tracking-[0.3em] mb-4 paper-mode-text-gray">Calculated Drift Resonance</div>
-                        <div className="text-7xl font-thin font-sans tracking-tighter paper-mode-text-black" style={{color: riskColor}}>{riskScore}%</div>
-                        <div className="mt-4 flex items-center justify-between">
-                           <div className="text-xs font-mono tracking-[0.2em] uppercase text-slate-400 paper-mode-text-gray">Var: ±{(Math.random() * 2).toFixed(2)}%</div>
+                     <div className="glass-panel p-8 col-span-1 md:col-span-2 flex flex-col justify-center relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-6 opacity-10" style={{color: riskColor}}><ShieldAlert size={120}/></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 animate-sweep pointer-events-none opacity-50"></div>
+                        <div className="flex items-start justify-between z-10 relative">
+                           <div>
+                              <div className="text-[0.65rem] font-mono text-slate-500 uppercase tracking-[0.3em] mb-4">Calculated Drift Resonance</div>
+                              <div className="flex items-baseline gap-4">
+                                 <div className="text-7xl font-thin font-sans tracking-tighter" style={{color: riskColor}}>{riskScore}%</div>
+                                 <div className="text-xs font-mono tracking-widest uppercase border px-2 py-1" style={{color: riskColor, borderColor: riskColor}}>
+                                    {riskScore < 40 ? 'Stable' : riskScore < 75 ? 'Moderate Drift' : riskScore < 90 ? 'High Divergence' : 'Critical Mutation'}
+                                 </div>
+                              </div>
+                           </div>
+                           {/* Temporal Graph placeholder (Visual only) */}
+                           <div className="h-16 w-32 hidden sm:flex items-end gap-1 opacity-60">
+                              {[0.2, 0.4, 0.3, 0.6, 0.5, 0.8, 0.7, 0.9].map((v, i) => (
+                                 <motion.div key={i} className="flex-1 bg-white/40 rounded-t-sm" initial={{height: 0}} animate={{height: `${v * 100}%`}} transition={{delay: i * 0.1}} style={{backgroundColor: v * 100 > 75 ? '#f43f5e' : undefined}}></motion.div>
+                              ))}
+                           </div>
                         </div>
-                        {paperMode && <p className="text-[10px] text-slate-600 mt-4 font-mono">Fig 1: Primary drift calculation indicating semantic deviation from institutional neutral baseline.</p>}
+                        <div className="mt-6 z-10 relative">
+                           <p className="text-[11px] font-mono text-slate-400 bg-black/40 p-3 border-l-2" style={{borderLeftColor: riskColor}}>
+                              {riskScore < 40 ? 'Discourse trajectory remains aligned with baseline communicative intent.' : riskScore < 75 ? 'Emerging semantic shift detected. Minor deviations from institutional baseline.' : 'Discourse trajectory deviates significantly from baseline communicative intent.'}
+                           </p>
+                           <div className="text-[10px] font-mono tracking-[0.2em] uppercase text-slate-500 mt-4 flex items-center gap-2">
+                              Var: ±{(Math.random() * 2).toFixed(2)}% | <Activity size={10} className="inline"/> Realtime Telemetry
+                           </div>
+                        </div>
                      </div>
-                     <MiniCard title="Semantic Entropy" value={`${(resonanceState.systemicUncertainty * 100).toFixed(1)}%`} color={paperMode ? "#1a1a1a" : "#fff"} desc="Ambiguity Threshold" />
-                     <MiniCard title="Rhetorical Pressure" value={`${(resonanceState.rhetoricalPressure * 100).toFixed(1)}%`} color={paperMode ? "#1a1a1a" : (isHighDrift ? "#f43f5e" : "#00f0ff")} desc="Coercive Modality" highlight={isHighDrift} />
+                     <MiniCard title="Semantic Entropy" value={`${(resonanceState.systemicUncertainty * 100).toFixed(1)}%`} color="#fff" desc="Ambiguity Threshold" />
+                     <MiniCard title="Rhetorical Pressure" value={`${(resonanceState.rhetoricalPressure * 100).toFixed(1)}%`} color={isHighDrift ? "#f43f5e" : "#00f0ff"} desc="Coercive Modality" highlight={isHighDrift} />
                   </div>
 
                   {/* COMPARATIVE MODE RENDERING */}
                   <div className={`grid grid-cols-1 ${compareData ? 'lg:grid-cols-2' : 'lg:grid-cols-2'} gap-8`}>
                      {/* ACTIVE CORPUS */}
                      <div className="glass-panel p-6 border-white/5">
-                        <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4 paper-mode-border-sub">
-                           <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white paper-mode-text-black">Semantic Constellation {compareData && "(ACTIVE)"}</div>
+                        <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
+                           <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white">Semantic Constellation {compareData && "(ACTIVE)"}</div>
                         </div>
                         <SemanticConstellation data={analysisResults} />
-                        {paperMode && <p className="text-[10px] text-slate-600 mt-4 font-mono">Fig 2a: Gravitational mapping of speech acts. Directive clauses exert topological distortion.</p>}
                      </div>
 
                      {/* COMPARE CORPUS */}
@@ -315,11 +333,10 @@ function App() {
 
                      {/* ACTIVE RIVER */}
                      <div className="glass-panel p-6 border-white/5">
-                        <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4 paper-mode-border-sub">
-                           <div className="text-[10px] font-mono text-white uppercase tracking-[0.3em] paper-mode-text-black">Meaning River Dynamics {compareData && "(ACTIVE)"}</div>
+                        <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
+                           <div className="text-[10px] font-mono text-white uppercase tracking-[0.3em]">Meaning River Dynamics {compareData && "(ACTIVE)"}</div>
                         </div>
                         <MeaningRiver data={analysisResults} />
-                        {paperMode && <p className="text-[10px] text-slate-600 mt-4 font-mono">Fig 2b: Fluid dynamic representation of semantic displacement. Turbulence scales with systemic ambiguity.</p>}
                      </div>
 
                      {/* COMPARE RIVER */}
@@ -342,6 +359,10 @@ function App() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <footer className="mt-32 pb-16 text-center">
+            <h3 className="text-white/60 font-serif italic text-xl footer-glow">Made by Ayesha Shakeel</h3>
+        </footer>
       </main>
     </div>
   );

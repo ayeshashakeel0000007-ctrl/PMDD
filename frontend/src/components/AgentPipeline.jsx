@@ -6,38 +6,48 @@ import { useResonance } from '../context/SemanticResonanceContext';
 const AGENT_DEFS = [
   {
     id: 1, name: "Preprocessor", icon: <Database size={14}/>,
+    role: "Corpus Baseline Initiator",
+    domain: "Syntax & Tokenization",
     purpose: "Normalizes clause boundaries, token segmentation, and semantic structure before interpretability propagation begins.",
     why: "Without clean normalization, downstream agents produce incoherent vector alignments.",
-    contribution: "Establishes the deterministic corpus baseline all agents operate on.",
+    contribution: "Establishes the deterministic corpus baseline.",
     theoryDominance: "Lexical Semantics",
   },
   {
     id: 2, name: "Pragmatics", icon: <BrainCircuit size={14}/>,
+    role: "Intent Extraction Engine",
+    domain: "Coercion & Directives",
     purpose: "Detects speech acts, conversational pressure, coercion patterns, implicature, and intent escalation across clause sequences.",
     why: "Pragmatic force is the primary carrier of discourse drift — invisible at the surface but structurally decisive.",
-    contribution: "Supplies illocutionary force vectors to Semantics and Register for cross-theory arbitration.",
-    theoryDominance: "Speech Act Theory / Gricean Pragmatics",
+    contribution: "Supplies illocutionary force vectors.",
+    theoryDominance: "Speech Act Theory",
   },
   {
     id: 3, name: "Semantics", icon: <ScanText size={14}/>,
+    role: "Meaning Mutation Tracker",
+    domain: "Lexical Migration",
     purpose: "Tracks lexical mutation, semantic field migration, ambiguity propagation, and ideological reframing across the corpus.",
-    why: "Semantic instability is the measurable signature of meaning drift — it quantifies how vocabulary is weaponized.",
-    contribution: "Produces entropy tensors and propagation vectors feeding the arbitration engine.",
+    why: "Semantic instability is the measurable signature of meaning drift.",
+    contribution: "Produces entropy tensors.",
     theoryDominance: "Systemic Functional Linguistics",
   },
   {
     id: 4, name: "Register", icon: <Scale size={14}/>,
+    role: "Institutional Profiler",
+    domain: "Authority & Formality",
     purpose: "Measures institutional framing, authority pressure, formality gradients, and discourse hierarchy patterns.",
-    why: "Register shift is how power asymmetry enters language — covert but computationally detectable.",
-    contribution: "Provides formality tensors and institutional override signals to the Orchestrator.",
+    why: "Register shift is how power asymmetry enters language.",
+    contribution: "Provides formality tensors.",
     theoryDominance: "Register Theory / SFL",
   },
   {
     id: 5, name: "Orchestrator", icon: <Cpu size={14}/>,
+    role: "Synthesis Arbitrator",
+    domain: "Epistemic Resolution",
     purpose: "Arbitrates conflicting interpretations from all agents and synthesizes a deterministic final drift conclusion.",
-    why: "Multi-theory disagreement is inevitable — the Orchestrator resolves conflicts with weighted epistemic synthesis.",
-    contribution: "Produces the final drift magnitude, uncertainty index, and interpretability lineage.",
-    theoryDominance: "Weighted Epistemic Synthesis",
+    why: "Multi-theory disagreement is inevitable — the Orchestrator resolves conflicts.",
+    contribution: "Produces the final drift magnitude.",
+    theoryDominance: "Epistemic Synthesis",
   },
 ];
 
@@ -142,17 +152,20 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
           className="absolute left-0 right-0 h-[1px] bg-white/5 pointer-events-none z-0" />}
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/8 pb-2 relative z-10">
-          <div className="flex items-center gap-2">
-            <div className={`${isConflict ? 'text-amber-500' : isActive ? 'text-white' : 'text-slate-500'}`}>{agent.icon}</div>
-            <span className="font-mono text-xs tracking-[0.2em] uppercase font-bold text-white">{agent.name}</span>
+        <div className="flex flex-col gap-1 border-b border-white/8 pb-2 relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className={`${isConflict ? 'text-amber-500' : isActive ? 'text-white' : 'text-slate-500'}`}>{agent.icon}</div>
+              <span className="font-mono text-xs tracking-[0.2em] uppercase font-bold text-white">{agent.name}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {isConflict && <AlertTriangle size={8} className="text-amber-500 animate-pulse"/>}
+              {cogState === 'Synchronizing' && <Clock size={8} className="text-white animate-pulse"/>}
+              {cogState === 'Consensus Locked' && <CheckCircle2 size={8} className="text-slate-400"/>}
+              <ChevronDown size={10} className={`text-slate-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}/>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            {isConflict && <AlertTriangle size={8} className="text-amber-500 animate-pulse"/>}
-            {cogState === 'Synchronizing' && <Clock size={8} className="text-white animate-pulse"/>}
-            {cogState === 'Consensus Locked' && <CheckCircle2 size={8} className="text-slate-400"/>}
-            <ChevronDown size={10} className={`text-slate-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}/>
-          </div>
+          <div className="text-[9px] font-mono tracking-widest uppercase text-slate-500">{agent.role}</div>
         </div>
 
         {/* Cognitive State Badge */}
@@ -160,12 +173,15 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
           {cogState}
         </div>
 
-        {/* Purpose Block */}
-        <div className="bg-white/3 border border-white/5 p-2 relative z-10">
-          <p className="text-[10px] font-mono text-slate-400 leading-relaxed">{agent.purpose}</p>
-          <div className="mt-2 pt-2 border-t border-white/5">
-            <span className="text-xs font-mono text-slate-600 uppercase tracking-widest">Theory: </span>
-            <span className="text-xs font-mono text-white">{agent.theoryDominance}</span>
+        {/* Analytical Domain & Theory Block */}
+        <div className="bg-white/3 border border-white/5 p-2 relative z-10 flex flex-col gap-2">
+          <div>
+            <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest block">Analytical Domain</span>
+            <span className="text-[10px] font-mono text-white">{agent.domain}</span>
+          </div>
+          <div className="border-t border-white/5 pt-1">
+            <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest block">Active Theory</span>
+            <span className="text-[10px] font-mono text-white">{agent.theoryDominance}</span>
           </div>
         </div>
 
@@ -177,7 +193,7 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
             { label: 'Confidence', val: `${metrics.confidence}%` },
             { label: 'Clauses', val: metrics.throughputClauses },
           ].map(m => (
-            <div key={m.label} className="flex justify-between text-xs font-mono">
+            <div key={m.label} className="flex justify-between text-[10px] font-mono">
               <span className="text-slate-600 uppercase tracking-widest">{m.label}</span>
               <span className="text-slate-200">{m.val}</span>
             </div>
@@ -186,36 +202,28 @@ const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, a
 
         {/* Load Bars */}
         <div className="space-y-1 relative z-10">
-          <EntropyBar label="Semantic Load" value={metrics.load} color={isConflict ? 'bg-amber-500' : 'bg-white'} />
-          <EntropyBar label="Propagation Pressure" value={metrics.pressure} color={isHighDrift ? 'bg-rose-500' : 'bg-white/60'} />
-        </div>
-
-        {/* Packet Stream Telemetry */}
-        <div className="relative z-10 space-y-1">
-          <span className="text-xs font-mono text-slate-600 uppercase tracking-widest">Packet Stream</span>
-          <PacketStream
-            active={isActive}
-            color={isConflict ? 'bg-amber-400' : isHighDrift ? 'bg-rose-400' : 'bg-white'}
-            count={isConflict ? 5 : 3}
-          />
+          <EntropyBar label="Semantic Load" value={metrics.load} color={isConflict ? 'bg-amber-500' : 'bg-holo-cyan'} />
+          <EntropyBar label="Propagation Pressure" value={metrics.pressure} color={isHighDrift ? 'bg-rose-500' : 'bg-plasma-violet'} />
         </div>
 
         {/* Sync Pulse */}
         <div className="flex items-center gap-2 relative z-10 mt-auto">
           <motion.div animate={isActive ? { opacity: [0.3, 1, 0.3] } : {}} transition={{ duration: 1.5, repeat: Infinity }}
             className={`w-[3px] h-[3px] rounded-full ${isConflict ? 'bg-amber-500' : isActive ? 'bg-white' : 'bg-white/10'}`} />
-          <span className="text-xs font-mono text-slate-600 uppercase tracking-widest">
+          <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest">
             Sync: {cogState === 'Synchronizing' ? 'AWAIT' : isActive ? 'ACTIVE' : 'IDLE'}
           </span>
         </div>
       </motion.div>
 
-      {/* Beam to next agent */}
+      {/* Enhanced Animated Beam to next agent (desktop only) */}
       {agent.id < 5 && (
-        <div className="absolute top-1/2 -right-3 w-6 h-[1px] -translate-y-1/2 overflow-hidden bg-white/5 z-20">
-          {isActive && <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }}
-            transition={{ duration: 0.6, repeat: Infinity, ease: 'linear' }}
-            className={`absolute top-0 h-full w-3 ${isConflict ? 'bg-amber-500' : 'bg-white'}`} />}
+        <div className="absolute top-[40%] -right-3 w-6 h-[2px] -translate-y-1/2 overflow-hidden bg-white/5 z-20 hidden md:block">
+          {isActive && (
+            <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }}
+              transition={{ duration: 0.4, repeat: Infinity, ease: 'linear' }}
+              className={`absolute top-0 h-full w-full bg-gradient-to-r from-transparent via-${isConflict ? 'amber-500' : 'holo-cyan'} to-transparent`} />
+          )}
         </div>
       )}
     </div>

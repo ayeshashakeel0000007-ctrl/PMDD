@@ -187,6 +187,7 @@ const MutationTimeline = memo(({ results, isHighDrift }) => {
 // ── Orchestrator Synthesis ────────────────────────────────────────────────────
 const OrchestratorSynthesis = ({ results, isHighDrift }) => {
   const [openBlock, setOpenBlock] = useState(null);
+  const [viewMode, setViewMode] = useState('ACADEMIC'); // ACADEMIC or PRACTICAL
   const plan = results?.execution_plan || {};
   const math = results?.final_output?.math_scores || {};
   const segs = results?.segments || [];
@@ -243,59 +244,72 @@ const OrchestratorSynthesis = ({ results, isHighDrift }) => {
           </div>
         </div>
 
-        {/* Semantic Propagation Tree */}
+        {/* Glowing SVG Semantic Propagation Tree */}
         <div>
           <h4 className="text-sm font-mono text-slate-300 uppercase tracking-widest flex items-center gap-2 mb-4">
-            <GitMerge size={14}/>Semantic Propagation Tree
+            <GitMerge size={14}/>Semantic Propagation Topology
           </h4>
-          <div className="bg-white/3 border border-white/8 p-5">
-            {segs.length>=2?(
-              <div className="flex flex-col gap-2 font-mono text-sm">
-                {segs.slice(0,Math.min(segs.length,8)).map((s,i)=>{
-                  const conf=s.pragmatics?.confidence||1;
-                  const isEsc=conf<0.65;
-                  const indent=i*12;
-                  return (
-                    <div key={i} className="flex items-center gap-3" style={{paddingLeft:`${indent}px`}}>
-                      <span className="text-slate-700 shrink-0 text-xs">{'└─'}</span>
-                      <span className="text-slate-500 shrink-0 w-16 text-xs">Clause {i+1}</span>
-                      <span className={`flex-1 text-xs ${isEsc?'text-rose-400':'text-slate-500'}`}>
-                        {isEsc?'→ escalation propagated':'→ stable propagation'}
-                      </span>
-                      <span className={`text-xs font-bold ${isEsc?'text-rose-400':'text-slate-600'}`}>
-                        {(conf*100).toFixed(0)}%
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            ):<p className="text-slate-600 font-mono text-sm">Awaiting analysis corpus.</p>}
+          <div className="bg-black/80 border border-white/8 p-5 relative min-h-[200px] flex items-center justify-center overflow-hidden">
+            {segs.length >= 2 ? (
+              <svg width="100%" height="200" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet">
+                 <defs>
+                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                       <feGaussianBlur stdDeviation="4" result="blur" />
+                       <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                 </defs>
+                 {segs.slice(0, Math.min(segs.length, 6)).map((s, i) => {
+                    const conf = s.pragmatics?.confidence || 1;
+                    const isEsc = conf < 0.65;
+                    const x = 40 + i * 55;
+                    const y = 100 + (i % 2 === 0 ? -30 : 30) * (isEsc ? 1.5 : 1);
+                    const prevX = i > 0 ? 40 + (i - 1) * 55 : 40;
+                    const prevY = i > 0 ? 100 + ((i - 1) % 2 === 0 ? -30 : 30) * (((segs[i-1]?.pragmatics?.confidence||1)<0.65) ? 1.5 : 1) : 100;
+                    const col = isEsc ? '#f43f5e' : '#00f5c4';
+                    return (
+                       <g key={i}>
+                          {i > 0 && (
+                             <path d={`M ${prevX} ${prevY} C ${prevX + 25} ${prevY}, ${x - 25} ${y}, ${x} ${y}`}
+                                fill="none" stroke={col} strokeWidth="2" opacity="0.4" filter="url(#glow)" />
+                          )}
+                          <circle cx={x} cy={y} r="5" fill={col} filter="url(#glow)" />
+                          {isEsc && <circle cx={x} cy={y} r="12" fill="none" stroke="#f43f5e" strokeWidth="1" className="animate-ping" opacity="0.5"/>}
+                          <text x={x} y={y + 15} fill="rgba(255,255,255,0.6)" fontSize="9" textAnchor="middle" fontFamily="monospace">C{i+1}</text>
+                       </g>
+                    );
+                 })}
+              </svg>
+            ) : <p className="text-slate-600 font-mono text-sm z-10">Awaiting sufficient clauses.</p>}
           </div>
         </div>
 
-        {/* Research Interpretation Blocks */}
+        {/* Research Interpretation Toggle Block */}
         <div>
-          <h4 className="text-sm font-mono text-slate-300 uppercase tracking-widest flex items-center gap-2 mb-4">
-            <BookOpen size={14}/>Research Interpretation
-          </h4>
-          <div className="space-y-2">
-            {interpBlocks.map((b,i)=>(
-              <div key={b.label} className="border border-white/8 overflow-hidden">
-                <button onClick={()=>setOpenBlock(openBlock===i?null:i)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-white/3 hover:bg-white/5 transition-colors">
-                  <span className="text-xs font-mono text-slate-400 uppercase tracking-widest">{b.label}</span>
-                  <ChevronDown size={12} className={`text-slate-600 transition-transform ${openBlock===i?'rotate-180':''}`}/>
-                </button>
-                <AnimatePresence>
-                  {openBlock===i&&(
-                    <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}}
-                      className="px-4 py-3 bg-black/40 border-t border-white/5">
-                      <p className="text-sm font-mono text-slate-300 leading-relaxed">{b.text}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
+          <div className="flex items-center justify-between mb-4">
+             <h4 className="text-sm font-mono text-slate-300 uppercase tracking-widest flex items-center gap-2">
+               <BookOpen size={14}/>Research Interpretation
+             </h4>
+             <div className="flex border border-white/10 rounded-sm overflow-hidden">
+                <button onClick={() => setViewMode('ACADEMIC')} className={`px-3 py-1 text-[10px] font-mono tracking-widest uppercase transition-colors ${viewMode === 'ACADEMIC' ? 'bg-white/10 text-white' : 'bg-transparent text-slate-500 hover:text-white'}`}>Academic</button>
+                <button onClick={() => setViewMode('PRACTICAL')} className={`px-3 py-1 text-[10px] font-mono tracking-widest uppercase transition-colors ${viewMode === 'PRACTICAL' ? 'bg-white/10 text-white' : 'bg-transparent text-slate-500 hover:text-white'}`}>Practical</button>
+             </div>
+          </div>
+          <div className="bg-white/3 border border-white/8 p-6 min-h-[200px]">
+             <AnimatePresence mode="wait">
+                {viewMode === 'ACADEMIC' ? (
+                   <motion.div key="academic" initial={{opacity:0, y:5}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-5}} className="space-y-4 text-sm font-mono text-slate-300 leading-relaxed">
+                      <p className="text-white border-l-2 border-holo-cyan pl-3">Systemic functional analysis reveals {isHighDrift ? 'statistically significant' : 'nominal'} pragmatic drift.</p>
+                      <p>KL divergence signals distributional shift in illocutionary force from assertives toward deontic directives.</p>
+                      <p>{isHighDrift ? 'Institutional register override compounds ambiguity propagation across clause boundaries, indicating a coercive intent escalation vector.' : 'No significant epistemic or institutional manipulation vectors detected. Corpus remains within normal cooperative bounds.'}</p>
+                   </motion.div>
+                ) : (
+                   <motion.div key="practical" initial={{opacity:0, y:5}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-5}} className="space-y-4 text-sm font-sans text-slate-200 leading-relaxed tracking-wide">
+                      <p className="text-lg font-light text-white mb-2">{isHighDrift ? 'High Risk of Manipulative Language' : 'Normal, Cooperative Language'}</p>
+                      <p>{isHighDrift ? 'The speaker is gradually escalating pressure by using authoritative, commanding language disguised as normal conversation.' : 'The speaker is maintaining a cooperative and transparent communicative style throughout the text.'}</p>
+                      <p>{isHighDrift ? 'This pattern is typical in coercive control or strong rhetorical manipulation where the intent is to force agreement without explicitly asking for it.' : 'The text is clear and honest. There are no hidden attempts to push the listener into agreement or action.'}</p>
+                   </motion.div>
+                )}
+             </AnimatePresence>
           </div>
         </div>
       </div>
@@ -303,20 +317,35 @@ const OrchestratorSynthesis = ({ results, isHighDrift }) => {
   );
 };
 
+// ── Data Sanitization Layer ─────────────────────────────────────────────────────
+const sanitizeToken = (token) => {
+  if (!token) return null;
+  const t = token.toLowerCase();
+  // Filter out known hallucinated or non-scientific backend terms
+  const blacklisted = ['confucius', 'sloking', 'upper soul', 'placeholder', 'null'];
+  if (blacklisted.some(b => t.includes(b))) return null;
+  // Ensure token is primarily letters/numbers, no weird artifacts
+  if (/[^a-zA-Z0-9\s\-]/.test(token)) return null;
+  if (token.length > 30 || token.length < 2) return null;
+  return token;
+};
+
 // ── Keyword Intelligence ──────────────────────────────────────────────────────
 const KeywordIntelligence = ({ results }) => {
   const keywords = [];
   results?.segments?.forEach(seg=>{
     seg.pragmatics?.speech_acts?.forEach(act=>{
-      if(!act.evidence) return;
+      const cleanWord = sanitizeToken(act.evidence);
+      if(!cleanWord) return;
       const isDir=act.category==='Directive';
-      keywords.push({ word:act.evidence, cat:act.category, conf:act.confidence,
+      keywords.push({ word:cleanWord, cat:act.category, conf:act.confidence,
         theory:'Speech Act Theory', role:'Pragmatic Force',
         color: isDir?'border-rose-500/40 text-rose-400 bg-rose-500/5':'border-white/15 text-slate-300 bg-white/3' });
     });
     seg.semantics?.semantic_fields?.slice(0,2).forEach(f=>{
-      if(!f.word) return;
-      keywords.push({ word:f.word, cat:f.field, conf:0.85,
+      const cleanWord = sanitizeToken(f.word);
+      if(!cleanWord) return;
+      keywords.push({ word:cleanWord, cat:f.field, conf:0.85,
         theory:'Halliday SFL', role:'Semantic Anchor',
         color:'border-white/10 text-slate-400 bg-white/2' });
     });

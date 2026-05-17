@@ -4,47 +4,63 @@ import { ChevronDown, ChevronRight, Search, Activity, TrendingUp, Link as LinkIc
 import { useResonance } from '../context/SemanticResonanceContext';
 import { useWorkspace } from '../context/ResearchWorkspaceContext';
 
+const sanitizeToken = (token) => {
+  if (!token) return null;
+  const t = token.toLowerCase();
+  const blacklisted = ['confucius', 'sloking', 'upper soul', 'placeholder', 'null'];
+  if (blacklisted.some(b => t.includes(b))) return null;
+  if (/[^a-zA-Z0-9\s\-]/.test(token)) return null;
+  if (token.length > 30 || token.length < 2) return null;
+  return token;
+};
+
 const ClauseLineageGraph = ({ currentIndex, totalLength, isHighDrift }) => {
-  // Generate a mock lineage path based on the current clause index
   const getLineageNodes = () => {
      let nodes = [];
-     if (currentIndex > 2) nodes.push({ idx: currentIndex - 2, text: "Institutional seed", type: 'origin' });
-     if (currentIndex > 0) nodes.push({ idx: currentIndex - 1, text: isHighDrift ? "Escalation acceleration" : "Linear propagation", type: 'node' });
+     if (currentIndex > 2) nodes.push({ idx: currentIndex - 2, text: "Institutional seed", type: 'origin', active: false });
+     if (currentIndex > 0) nodes.push({ idx: currentIndex - 1, text: isHighDrift ? "Escalation acceleration" : "Linear propagation", type: 'node', active: false });
      nodes.push({ idx: currentIndex, text: isHighDrift ? "Ambiguity destabilization" : "Semantic stabilization", type: 'target', active: true });
      return nodes;
   };
-  
   const nodes = getLineageNodes();
 
   return (
-    <div className="w-full bg-black border border-white/5 p-4 relative overflow-hidden mb-6">
+    <div className="w-full bg-black border border-white/5 p-4 relative overflow-hidden mb-6 min-h-[120px] flex flex-col justify-center">
        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMSkiLz48L3N2Zz4=')] opacity-50 pointer-events-none"></div>
        
-       <div className="flex items-center gap-2 mb-4 relative z-10 border-b border-white/5 pb-2">
+       <div className="flex items-center gap-2 mb-2 relative z-10 border-b border-white/5 pb-2">
           <GitBranch size={12} className="text-slate-500" />
-          <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-slate-500">Semantic Lineage Map</span>
+          <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-slate-500">Semantic Lineage Topology</span>
        </div>
 
-       <div className="flex flex-col relative z-10 pl-2">
-          {nodes.map((node, i) => (
-             <div key={i} className="flex items-start group">
-                <div className="flex flex-col items-center mr-4">
-                   <div className={`w-3 h-3 rounded-full flex items-center justify-center ${node.active ? (isHighDrift ? 'bg-rose-500' : 'bg-white') : 'bg-white/10'} border border-white/20 z-10 relative`}>
-                      {node.active && <div className="w-1 h-1 bg-black rounded-full" />}
-                   </div>
-                   {i < nodes.length - 1 && (
-                      <div className={`w-[1px] h-6 ${isHighDrift ? 'bg-rose-500/30 border-l border-dashed border-rose-500/50' : 'bg-white/10'}`}></div>
-                   )}
-                </div>
-                <div className={`flex flex-col justify-center h-4 mt-[-2px] ${node.active ? 'opacity-100' : 'opacity-50 group-hover:opacity-100'} transition-opacity`}>
-                   <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest bg-white/5 px-1 rounded-sm border border-white/5">Clause {node.idx + 1}</span>
-                      <span className="text-[9px] font-mono text-slate-300">→</span>
-                      <span className={`text-[10px] font-mono ${node.active && isHighDrift ? 'text-rose-400' : node.active ? 'text-white' : 'text-slate-400'}`}>{node.text}</span>
-                   </div>
-                </div>
-             </div>
-          ))}
+       <div className="relative z-10 w-full h-[60px] mt-2">
+          <svg width="100%" height="100%" viewBox="0 0 400 60" preserveAspectRatio="xMidYMid meet">
+             <defs>
+                <filter id="glowTree" x="-20%" y="-20%" width="140%" height="140%">
+                   <feGaussianBlur stdDeviation="3" result="blur" />
+                   <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+             </defs>
+             {nodes.map((node, i) => {
+                const x = 50 + i * 140;
+                const y = 30;
+                const prevX = i > 0 ? 50 + (i - 1) * 140 : 50;
+                const col = node.active ? (isHighDrift ? '#f43f5e' : '#00f5c4') : 'rgba(255,255,255,0.4)';
+                return (
+                   <g key={i}>
+                      {i > 0 && (
+                         <path d={`M ${prevX} ${y} L ${x} ${y}`}
+                            fill="none" stroke={col} strokeWidth="1.5" opacity="0.6" filter="url(#glowTree)" 
+                            strokeDasharray={isHighDrift && node.active ? "4 2" : "none"} />
+                      )}
+                      <circle cx={x} cy={y} r="4" fill={col} filter="url(#glowTree)" />
+                      {node.active && isHighDrift && <circle cx={x} cy={y} r="10" fill="none" stroke="#f43f5e" strokeWidth="1" className="animate-ping" opacity="0.5"/>}
+                      <text x={x} y={y - 12} fill="rgba(255,255,255,0.5)" fontSize="8" textAnchor="middle" fontFamily="monospace">C{node.idx + 1}</text>
+                      <text x={x} y={y + 15} fill={node.active ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)"} fontSize="8" textAnchor="middle" fontFamily="monospace">{node.text}</text>
+                   </g>
+                );
+             })}
+          </svg>
        </div>
     </div>
   );
@@ -174,36 +190,46 @@ const EvidenceExplorer = ({ results }) => {
                           {/* Pragmatics Column */}
                           {pragmatics.speech_acts && (
                             <div className="space-y-3">
-                              <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
+                              <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
                                  <h4 className="text-[9px] font-mono text-white uppercase tracking-[0.2em]">Pragmatic Derivation</h4>
+                                 <span className="text-[7px] font-mono text-slate-500 uppercase">Speech Act Theory</span>
                               </div>
-                              {pragmatics.speech_acts.map((act, i) => (
-                                <div key={i} className="bg-white/5 p-2 border border-white/5">
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className="text-[9px] text-slate-300 font-mono tracking-widest uppercase">{act.category}</span>
-                                    <span className="text-[8px] font-mono text-white">{(act.confidence * 100).toFixed(1)}%</span>
+                              {pragmatics.speech_acts.map((act, i) => {
+                                const cleanEv = sanitizeToken(act.evidence);
+                                if (!cleanEv) return null;
+                                return (
+                                  <div key={i} className="bg-white/5 p-2 border border-white/5">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <span className="text-[9px] text-slate-300 font-mono tracking-widest uppercase">{act.category}</span>
+                                      <span className="text-[8px] font-mono text-white">{(act.confidence * 100).toFixed(1)}%</span>
+                                    </div>
+                                    <p className="text-[8px] text-slate-500 font-mono uppercase tracking-widest">Token: <span className="text-slate-300">"{cleanEv}"</span></p>
                                   </div>
-                                  <p className="text-[8px] text-slate-500 font-mono uppercase tracking-widest">Token: <span className="text-slate-300">"{act.evidence}"</span></p>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
 
                           {/* Semantics Column */}
                           {semantics.semantic_fields && (
                             <div className="space-y-3">
-                              <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
+                              <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
                                  <h4 className="text-[9px] font-mono text-white uppercase tracking-[0.2em]">Semantic Tensor</h4>
+                                 <span className="text-[7px] font-mono text-slate-500 uppercase">Systemic Functional</span>
                               </div>
-                              {semantics.semantic_fields.map((field, i) => (
-                                <div key={i} className="bg-white/5 p-2 border border-white/5">
-                                  <div className="flex justify-between items-center mb-2">
-                                     <span className="text-[9px] text-slate-300 font-mono tracking-widest uppercase">"{field.word}"</span>
-                                     <span className="text-[7px] font-mono text-slate-500 px-1 border border-white/10 uppercase">{field.field}</span>
+                              {semantics.semantic_fields.map((field, i) => {
+                                const cleanWord = sanitizeToken(field.word);
+                                if (!cleanWord) return null;
+                                return (
+                                  <div key={i} className="bg-white/5 p-2 border border-white/5">
+                                    <div className="flex justify-between items-center mb-2">
+                                       <span className="text-[9px] text-slate-300 font-mono tracking-widest uppercase">"{cleanWord}"</span>
+                                       <span className="text-[7px] font-mono text-slate-500 px-1 border border-white/10 uppercase">{field.field}</span>
+                                    </div>
+                                    <p className="text-[8px] text-slate-500 font-mono mt-1 tracking-widest uppercase">Map: {field.contextual_meaning}</p>
                                   </div>
-                                  <p className="text-[8px] text-slate-500 font-mono mt-1 tracking-widest uppercase">Map: {field.contextual_meaning}</p>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
 

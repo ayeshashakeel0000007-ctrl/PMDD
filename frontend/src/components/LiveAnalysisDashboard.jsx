@@ -199,17 +199,19 @@ const LiveAnalysisDashboard = ({ onResults, onAnalysisStart, onAnalysisError }) 
                </div>
             </div>
             
-            {/* Persistent Research Memory */}
+            {/* Semantic Research Workspace */}
             <div className="border-t border-white/5 bg-black/60 p-6">
-               <h3 className="text-[10px] font-mono text-slate-500 tracking-[0.2em] uppercase mb-4 flex items-center gap-2"><Database size={12}/> Persistent Research Memory</h3>
+               <div className="flex items-center gap-4 mb-4">
+                 <h3 className="text-[10px] font-mono text-slate-500 tracking-[0.2em] uppercase flex items-center gap-2"><Database size={12}/> Semantic Research Workspace</h3>
+                 <span className="text-[8px] font-mono text-slate-600 uppercase tracking-widest border border-white/10 px-2 py-0.5 rounded-sm">Stores semantic vectors, prior corpus states, and orchestrator memory traces for longitudinal comparison.</span>
+               </div>
                <div className="flex gap-4 overflow-x-auto pb-2">
                   <div className="bg-white/5 border border-white/10 p-3 min-w-[200px] flex flex-col gap-2">
-                     <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">Active Vector Space</span>
+                     <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">Current Semantic Embedding Matrix</span>
                      <span className="text-[10px] font-mono text-white">[FP: AWAITING_INPUT]</span>
                   </div>
-                  {/* We would render saved snapshots here if we imported useWorkspace in LiveAnalysisDashboard. Since it's passed from App, let's just make it look like classified infrastructure for now. */}
                   <div className="bg-white/5 border border-white/10 p-3 min-w-[200px] flex flex-col gap-2">
-                     <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">Archived Tensor</span>
+                     <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">Previous Analysis Snapshots</span>
                      <span className="text-[10px] font-mono text-slate-500">[FP: 8F92-4C1A]</span>
                   </div>
                </div>
