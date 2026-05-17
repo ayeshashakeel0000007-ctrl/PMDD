@@ -39,7 +39,7 @@ const LongitudinalDashboard = () => {
         apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
         
         console.log(`Pinging backend health: ${apiUrl}/health`);
-        const response = await fetch(`${apiUrl}/health`);
+        const response = await fetch(`${apiUrl}/api/health`);
         const data = await response.json();
         if (data.status === 'online') {
           setBackendStatus('Longitudinal Engine Ready');

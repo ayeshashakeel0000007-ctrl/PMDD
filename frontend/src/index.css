@@ -4,10 +4,185 @@
 
 @layer base {
   body {
-    @apply bg-pmdd-dark text-pmdd-bg font-sans antialiased;
+    @apply bg-obsidian text-slate-300 font-sans selection:bg-holo-cyan selection:text-obsidian overflow-x-hidden transition-colors duration-500;
+    margin: 0;
+    padding: 0;
   }
 }
 
-.glass-panel {
-  @apply bg-pmdd-dark/50 backdrop-blur-md border border-pmdd-accent/30 rounded-xl shadow-xl;
+@layer components {
+  .glass-panel {
+    @apply bg-obsidian/90 backdrop-blur-md border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.8)] relative overflow-hidden transition-colors duration-500;
+  }
+
+  .glass-panel::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-glow:hover {
+    @apply bg-white/5 border-white/20;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Environment Effects */
+.obs-bg {
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.02), transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(0, 240, 255, 0.02), transparent 40%);
+  z-index: -2;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.ambient-fog {
+  position: fixed;
+  inset: 0;
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
+  opacity: 0.01; 
+  mix-blend-mode: overlay;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.scanline {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.02));
+  background-size: 100% 2px;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.5;
+  transition: opacity 0.5s ease;
+}
+
+/* Animations */
+@keyframes flicker-ambiguity {
+  0%, 100% { opacity: 1; }
+  5% { opacity: 0.8; }
+  10% { opacity: 0.9; }
+  15% { opacity: 0.8; }
+  20% { opacity: 1; text-shadow: 0 0 5px rgba(255, 255, 255, 0.2); }
+  25% { opacity: 0.7; }
+  30% { opacity: 1; }
+}
+
+.animate-flicker-ambiguity {
+  animation: flicker-ambiguity 4s infinite alternate;
+}
+
+@keyframes sweep {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+
+.animate-sweep {
+  animation: sweep 3s infinite;
+}
+
+@keyframes ecg-mini {
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.ecg-mini {
+  width: 30px;
+  height: 15px;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.ecg-mini-line {
+  stroke-dasharray: 100;
+  animation: ecg-mini 2s linear infinite;
+  stroke-width: 1;
+  fill: none;
+}
+
+.btn-cinematic-run {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-cinematic-run:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.export-btn {
+  @apply flex items-center gap-2 px-4 py-2 rounded-md font-mono text-xs tracking-widest bg-obsidian border border-white/10 hover:bg-white/5 transition-all;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #030712; 
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1); 
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2); 
+}
+
+/* ========================================= */
+/* PAPER MODE: SCIENTIFIC PUBLICATION        */
+/* ========================================= */
+
+.paper-mode {
+   @apply bg-[#fdfdfc] text-[#1a1a1a] selection:bg-slate-200 selection:text-black;
+}
+
+.paper-mode .obs-bg,
+.paper-mode .ambient-fog,
+.paper-mode .scanline {
+   opacity: 0 !important;
+}
+
+.paper-mode .glass-panel {
+   @apply bg-white border border-slate-300 shadow-sm text-slate-800;
+}
+
+.paper-mode .glass-panel::before {
+   display: none;
+}
+
+.paper-mode .paper-mode-text-black { @apply text-slate-900 !important; }
+.paper-mode .paper-mode-text-gray { @apply text-slate-600 !important; }
+.paper-mode .paper-mode-bg-white { @apply bg-white !important; }
+.paper-mode .paper-mode-bg-black { @apply bg-slate-800 !important; }
+.paper-mode .paper-mode-border { @apply border-slate-300 !important; }
+.paper-mode .paper-mode-border-sub { @apply border-slate-200 !important; }
+.paper-mode .paper-mode-border-black { @apply border-slate-800 !important; }
+.paper-mode .paper-mode-stroke-black { stroke: #1a1a1a !important; }
+.paper-mode .paper-mode-stroke-gray { stroke: #cbd5e1 !important; }
+.paper-mode .paper-mode-fill-black { fill: #1a1a1a !important; }
+.paper-mode .paper-mode-fill-gray { fill: #94a3b8 !important; }
+
+/* Constellation overrides for paper mode */
+.paper-mode svg circle[stroke="rgba(255,255,255,0.05)"],
+.paper-mode svg circle[stroke="rgba(255,255,255,0.02)"] {
+   stroke: rgba(0,0,0,0.1) !important;
+}
+.paper-mode svg circle[fill="#fff"] {
+   fill: #1a1a1a !important;
+}
+.paper-mode svg line[stroke="rgba(255,255,255,0.2)"] {
+   stroke: rgba(0,0,0,0.2) !important;
+}
+.paper-mode svg text[fill="#fff"] {
+   fill: #1a1a1a !important;
 }
