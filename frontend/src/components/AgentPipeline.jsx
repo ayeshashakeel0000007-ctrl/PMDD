@@ -1,297 +1,306 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Database, BrainCircuit, ScanText, Scale, Cpu, Activity, Lock, Unlock, Zap, AlertTriangle, RefreshCcw, Layers, Server, ShieldAlert, ActivitySquare, Terminal, Network, SearchCode, ChevronDown, CheckCircle2, Clock } from 'lucide-react';
+import { Database, BrainCircuit, ScanText, Scale, Cpu, Activity, Lock, AlertTriangle, RefreshCcw, ChevronDown, CheckCircle2, Clock, Terminal, Network, Layers, Server, ShieldAlert, ActivitySquare, SearchCode } from 'lucide-react';
 import { useResonance } from '../context/SemanticResonanceContext';
 
-const MemoryTransferBeam = ({ active, isHighDrift, hasConflict, isWaitState }) => {
-  // Semantic Residue Trail: leave ghosted paths active post-arbitration
-  if (!active && isHighDrift) return (
-     <div className="absolute top-1/2 -right-6 w-12 h-[1px] -translate-y-1/2 z-0 overflow-hidden bg-rose-500/10 border-b border-rose-500/20 border-dashed"></div>
-  );
-  if (!active && !isHighDrift) return <div className="absolute top-1/2 -right-4 w-8 h-[1px] bg-white/5 -translate-y-1/2 z-0" />;
+const AGENT_DEFS = [
+  {
+    id: 1, name: "Preprocessor", icon: <Database size={14}/>,
+    purpose: "Normalizes clause boundaries, token segmentation, and semantic structure before interpretability propagation begins.",
+    why: "Without clean normalization, downstream agents produce incoherent vector alignments.",
+    contribution: "Establishes the deterministic corpus baseline all agents operate on.",
+    theoryDominance: "Lexical Semantics",
+  },
+  {
+    id: 2, name: "Pragmatics", icon: <BrainCircuit size={14}/>,
+    purpose: "Detects speech acts, conversational pressure, coercion patterns, implicature, and intent escalation across clause sequences.",
+    why: "Pragmatic force is the primary carrier of discourse drift — invisible at the surface but structurally decisive.",
+    contribution: "Supplies illocutionary force vectors to Semantics and Register for cross-theory arbitration.",
+    theoryDominance: "Speech Act Theory / Gricean Pragmatics",
+  },
+  {
+    id: 3, name: "Semantics", icon: <ScanText size={14}/>,
+    purpose: "Tracks lexical mutation, semantic field migration, ambiguity propagation, and ideological reframing across the corpus.",
+    why: "Semantic instability is the measurable signature of meaning drift — it quantifies how vocabulary is weaponized.",
+    contribution: "Produces entropy tensors and propagation vectors feeding the arbitration engine.",
+    theoryDominance: "Systemic Functional Linguistics",
+  },
+  {
+    id: 4, name: "Register", icon: <Scale size={14}/>,
+    purpose: "Measures institutional framing, authority pressure, formality gradients, and discourse hierarchy patterns.",
+    why: "Register shift is how power asymmetry enters language — covert but computationally detectable.",
+    contribution: "Provides formality tensors and institutional override signals to the Orchestrator.",
+    theoryDominance: "Register Theory / SFL",
+  },
+  {
+    id: 5, name: "Orchestrator", icon: <Cpu size={14}/>,
+    purpose: "Arbitrates conflicting interpretations from all agents and synthesizes a deterministic final drift conclusion.",
+    why: "Multi-theory disagreement is inevitable — the Orchestrator resolves conflicts with weighted epistemic synthesis.",
+    contribution: "Produces the final drift magnitude, uncertainty index, and interpretability lineage.",
+    theoryDominance: "Weighted Epistemic Synthesis",
+  },
+];
 
+const COGNITIVE_STATES = ['Stable','Processing','Arbitration Conflict','Synchronizing','Drift Escalation','Recovery','Consensus Locked'];
+const STATE_COLORS = {
+  'Stable': 'text-slate-400 border-white/10',
+  'Processing': 'text-white border-white/40',
+  'Arbitration Conflict': 'text-amber-500 border-amber-500/50',
+  'Synchronizing': 'text-white border-white/30',
+  'Drift Escalation': 'text-rose-400 border-rose-500/50',
+  'Recovery': 'text-amber-300 border-amber-300/30',
+  'Consensus Locked': 'text-slate-400 border-white/10',
+};
+
+const PacketStream = ({ active, color = 'bg-white', count = 3 }) => {
+  if (!active) return <div className="w-full h-[2px] bg-white/5 rounded" />;
   return (
-    <div className={`absolute top-1/2 -right-6 w-12 h-[1px] -translate-y-1/2 z-0 overflow-hidden bg-white/10 flex items-center ${isWaitState ? 'opacity-30' : 'opacity-100'} ${isHighDrift && !isWaitState ? 'animate-pulse' : ''}`}>
-       <motion.div 
-         initial={{ x: '-100%' }} 
-         animate={{ x: '100%' }} 
-         transition={{ duration: isHighDrift ? (isWaitState ? 2 : 0.1) : 0.5, repeat: Infinity, ease: "linear" }}
-         className={`w-full h-full ${hasConflict ? 'bg-amber-500' : isHighDrift ? 'bg-rose-500' : 'bg-holo-cyan'}`}
-       />
-       {/* Active Data Packet */}
-       {!isWaitState && (
-         <motion.div
-           initial={{ x: -10 }}
-           animate={{ x: 60 }}
-           transition={{ duration: isHighDrift ? 0.2 : 0.8, repeat: Infinity, ease: "linear" }}
-           className={`absolute w-[2px] h-[2px] ${hasConflict ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24]' : 'bg-white shadow-[0_0_8px_#fff]'}`}
-         />
-       )}
+    <div className="relative w-full h-[2px] bg-white/5 overflow-hidden rounded">
+      {[...Array(count)].map((_, i) => (
+        <motion.div key={i}
+          initial={{ x: '-100%' }}
+          animate={{ x: '100%' }}
+          transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.4, ease: 'linear' }}
+          className={`absolute top-0 h-full w-6 ${color} opacity-70`}
+          style={{ filter: 'blur(1px)' }}
+        />
+      ))}
     </div>
   );
 };
 
-const AgentInspectionDrawer = ({ agent, results, isHighDrift }) => {
-  const getTraceData = () => {
-    switch(agent.id) {
-      case 1: return { title: "Corpus Normalization", data: "Vector Synchronization: STABLE\nSegmentation Integrity: 99.4%\nTokens Extracted: 4,092" };
-      case 2: return { title: "Pragmatic Mapping", data: "Speech Acts Identified: 12\nConversational Pressure: HIGH\nIntent Mutation: DETECTED" };
-      case 3: return { title: "Semantic Topology", data: "Semantic Drift: " + (isHighDrift ? "SEVERE" : "NOMINAL") + "\nLexical Mutation: ACTIVE\nConcept Migration: 2 Nodes" };
-      case 4: return { title: "Register Inference", data: "Institutional Authority: HIGH\nFormality Dynamics: RIGID\nRhetorical Calibration: FORCED" };
-      case 5: return { title: "Orchestration Synthesis", data: "Theory Arbitration: RESOLVED\nConflict Resolution: ACTIVE\nInterpretability Gen: COMPLETE" };
-      default: return { title: "Raw Traces", data: "" };
-    }
-  };
+const EntropyBar = ({ value = 0, label, color = 'bg-white' }) => (
+  <div className="space-y-[3px]">
+    <div className="flex justify-between text-[7px] font-mono uppercase tracking-widest text-slate-500">
+      <span>{label}</span><span className="text-slate-300">{value}%</span>
+    </div>
+    <div className="w-full h-[2px] bg-white/5">
+      <motion.div initial={{ width: 0 }} animate={{ width: `${value}%` }} transition={{ duration: 1.2 }}
+        className={`h-full ${color}`} />
+    </div>
+  </div>
+);
 
-  const getInterpretabilityData = () => {
-    switch(agent.id) {
-      case 1: return { theories: "Lexical Semantics: 92%\nSyntax Tree: 88%", chains: "Tokenize -> Tag -> Embed" };
-      case 2: return { theories: "Speech Act Theory: 84%\nGricean Pragmatics: 71%", chains: "Illocutionary Force Detected -> Intent Mapped" };
-      case 3: return { theories: "Systemic Functional Linguistics: 95%", chains: "Ideational Metafunction -> Semantic Tension" };
-      case 4: return { theories: "Register Theory: 89%\nSociolinguistics: 75%", chains: "Tenor Shift -> Formality Override" };
-      case 5: return { theories: "Synthesis Engine", chains: "Pragmatics + Semantics -> Final Drift Tensor" };
-      default: return { theories: "", chains: "" };
-    }
-  };
+const AgentCard = ({ agent, results, index, isHighDrift, onExpand, isExpanded, anyExpanded }) => {
+  const [cogState, setCogState] = useState('Stable');
+  const [metrics, setMetrics] = useState({ latency: '---', throughput: '---', confidence: 0, load: 0, pressure: 0, throughputClauses: 0 });
+  const mounted = useRef(true);
+  useEffect(() => { return () => { mounted.current = false; }; }, []);
 
-  const trace = getTraceData();
-  const interp = getInterpretabilityData();
+  useEffect(() => {
+    if (!results) { setCogState('Stable'); return; }
+    const delays = [0, 600, 1200, 1900, 2600];
+    const delay = delays[index] || index * 700;
+
+    // Wait state for Register (id=4) and lock for Orchestrator (id=5) on high drift
+    if (agent.id === 4) { setCogState('Synchronizing'); }
+    else if (agent.id === 5 && isHighDrift) { setCogState('Arbitration Conflict'); }
+    else { setCogState('Processing'); }
+
+    const completeTimer = setTimeout(() => {
+      if (!mounted.current) return;
+      if (isHighDrift && agent.id === 3) {
+        setCogState('Drift Escalation');
+        setTimeout(() => { if (mounted.current) setCogState('Recovery'); }, 1800);
+        setTimeout(() => { if (mounted.current) { setCogState('Consensus Locked'); finalizeMetrics(); } }, 3400);
+      } else if (agent.id === 5) {
+        setCogState('Consensus Locked'); finalizeMetrics();
+      } else {
+        setCogState('Stable'); finalizeMetrics();
+      }
+    }, delay + 1600);
+
+    function finalizeMetrics() {
+      const base = { 1: 0.12, 2: 0.38, 3: 0.61, 4: 0.84, 5: 1.02 };
+      setMetrics({
+        latency: (base[agent.id] + Math.random() * 0.08).toFixed(3),
+        throughput: (Math.random() * 4 + 1.5).toFixed(1),
+        confidence: (Math.random() * 15 + 82).toFixed(1),
+        load: Math.round(Math.random() * 30 + 55),
+        pressure: isHighDrift ? Math.round(Math.random() * 30 + 60) : Math.round(Math.random() * 20 + 20),
+        throughputClauses: results?.segments?.length || 4,
+      });
+    }
+
+    return () => clearTimeout(completeTimer);
+  }, [results, index, isHighDrift, agent.id]);
+
+  const isActive = cogState !== 'Stable';
+  const isConflict = cogState === 'Arbitration Conflict' || cogState === 'Drift Escalation';
+  const stateStyle = STATE_COLORS[cogState] || 'text-slate-500 border-white/5';
+  const dimOpacity = anyExpanded && !isExpanded ? 'opacity-25 transition-all' : 'opacity-100 transition-all';
+
+  const jitter = isConflict ? { x: [0, -1, 1, -1, 0] } : {};
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, height: 0, y: -20 }}
-      animate={{ opacity: 1, height: 'auto', y: 0 }}
-      exit={{ opacity: 0, height: 0, y: -20 }}
-      className="col-span-full bg-black/90 border border-white/10 mt-2 p-6 relative overflow-hidden group"
-    >
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-20 pointer-events-none"></div>
-      
-      <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
-        <SearchCode className="text-holo-cyan" size={14} />
-        <h3 className="text-sm font-mono text-white tracking-[0.2em] uppercase">{agent.name} <span className="text-slate-500 text-xs">Deep Inspection</span></h3>
+    <div className={`relative ${dimOpacity} cursor-pointer`} onClick={() => onExpand(isExpanded ? null : agent.id)}>
+      <motion.div animate={jitter} transition={{ duration: 0.15, repeat: isConflict ? Infinity : 0 }}
+        className={`bg-black/70 border ${isConflict ? 'border-amber-500/40' : isActive ? 'border-white/25' : 'border-white/8'} p-3 flex flex-col gap-2 min-h-[360px] relative overflow-hidden`}>
+
+        {/* Scan line effect */}
+        {isActive && <motion.div animate={{ y: ['0%','100%'] }} transition={{ duration: 2, repeat: Infinity, ease:'linear' }}
+          className="absolute left-0 right-0 h-[1px] bg-white/5 pointer-events-none z-0" />}
+
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-white/8 pb-2 relative z-10">
+          <div className="flex items-center gap-2">
+            <div className={`${isConflict ? 'text-amber-500' : isActive ? 'text-white' : 'text-slate-500'}`}>{agent.icon}</div>
+            <span className="font-mono text-[9px] tracking-[0.2em] uppercase font-bold text-white">{agent.name}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            {isConflict && <AlertTriangle size={8} className="text-amber-500 animate-pulse"/>}
+            {cogState === 'Synchronizing' && <Clock size={8} className="text-white animate-pulse"/>}
+            {cogState === 'Consensus Locked' && <CheckCircle2 size={8} className="text-slate-400"/>}
+            <ChevronDown size={10} className={`text-slate-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}/>
+          </div>
+        </div>
+
+        {/* Cognitive State Badge */}
+        <div className={`text-[7px] font-mono uppercase tracking-[0.15em] border px-2 py-[2px] w-fit ${stateStyle} ${isConflict ? 'animate-pulse' : ''}`}>
+          {cogState}
+        </div>
+
+        {/* Purpose Block */}
+        <div className="bg-white/3 border border-white/5 p-2 relative z-10">
+          <p className="text-[8px] font-mono text-slate-400 leading-relaxed">{agent.purpose}</p>
+          <div className="mt-2 pt-2 border-t border-white/5">
+            <span className="text-[7px] font-mono text-slate-600 uppercase tracking-widest">Theory: </span>
+            <span className="text-[7px] font-mono text-white">{agent.theoryDominance}</span>
+          </div>
+        </div>
+
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1 relative z-10">
+          {[
+            { label: 'Latency', val: `${metrics.latency}s` },
+            { label: 'Throughput', val: `${metrics.throughput}k/s` },
+            { label: 'Confidence', val: `${metrics.confidence}%` },
+            { label: 'Clauses', val: metrics.throughputClauses },
+          ].map(m => (
+            <div key={m.label} className="flex justify-between text-[7px] font-mono">
+              <span className="text-slate-600 uppercase tracking-widest">{m.label}</span>
+              <span className="text-slate-200">{m.val}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Load Bars */}
+        <div className="space-y-1 relative z-10">
+          <EntropyBar label="Semantic Load" value={metrics.load} color={isConflict ? 'bg-amber-500' : 'bg-white'} />
+          <EntropyBar label="Propagation Pressure" value={metrics.pressure} color={isHighDrift ? 'bg-rose-500' : 'bg-white/60'} />
+        </div>
+
+        {/* Packet Stream Telemetry */}
+        <div className="relative z-10 space-y-1">
+          <span className="text-[7px] font-mono text-slate-600 uppercase tracking-widest">Packet Stream</span>
+          <PacketStream
+            active={isActive}
+            color={isConflict ? 'bg-amber-400' : isHighDrift ? 'bg-rose-400' : 'bg-white'}
+            count={isConflict ? 5 : 3}
+          />
+        </div>
+
+        {/* Sync Pulse */}
+        <div className="flex items-center gap-2 relative z-10 mt-auto">
+          <motion.div animate={isActive ? { opacity: [0.3, 1, 0.3] } : {}} transition={{ duration: 1.5, repeat: Infinity }}
+            className={`w-[3px] h-[3px] rounded-full ${isConflict ? 'bg-amber-500' : isActive ? 'bg-white' : 'bg-white/10'}`} />
+          <span className="text-[7px] font-mono text-slate-600 uppercase tracking-widest">
+            Sync: {cogState === 'Synchronizing' ? 'AWAIT' : isActive ? 'ACTIVE' : 'IDLE'}
+          </span>
+        </div>
+      </motion.div>
+
+      {/* Beam to next agent */}
+      {agent.id < 5 && (
+        <div className="absolute top-1/2 -right-3 w-6 h-[1px] -translate-y-1/2 overflow-hidden bg-white/5 z-20">
+          {isActive && <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }}
+            transition={{ duration: 0.6, repeat: Infinity, ease: 'linear' }}
+            className={`absolute top-0 h-full w-3 ${isConflict ? 'bg-amber-500' : 'bg-white'}`} />}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const InspectionDrawer = ({ agent, results, isHighDrift }) => {
+  if (!agent) return null;
+  const math = results?.final_output?.math_scores || {};
+  const traces = {
+    1: `[NORMALIZE] Token boundary extraction complete.\n[SEGMENT] ${results?.segments?.length || 0} clauses isolated.\n[INDEX] Syntactic dependency graph built.\n[EMIT] Corpus matrix → downstream agents.`,
+    2: `[SAT] Speech Act classifier running.\n[GRICE] Implicature extraction: cooperative violations: ${Math.floor(Math.random()*3)+1}\n[PRESSURE] Deontic modality score: ${(math.pragmatic_entropy||0.5).toFixed(3)}\n[EMIT] Illocutionary vectors → Semantics.`,
+    3: `[SFL] Transitivity scheme mapping active.\n[DRIFT] Semantic entropy: ${((1-(math.confidence_weighted_formality||0.8))*10).toFixed(3)} bits\n[MIGRATE] Field migration: INSTITUTION → COERCION\n[EMIT] Entropy tensor → Register.`,
+    4: `[REGISTER] Formality tensor: ${(math.confidence_weighted_formality||0.8).toFixed(3)}\n[TENOR] Authority pressure: ${isHighDrift ? 'HIGH' : 'MODERATE'}\n[MODE] Institutional override: ${isHighDrift ? 'TRIGGERED' : 'NOMINAL'}\n[EMIT] Override signal → Orchestrator.`,
+    5: `[ARBITRATE] Receiving theory tensors...\n[WEIGHT] Pragmatics: 0.84 | Semantics: 0.91 | Register: 0.78\n[RESOLVE] Weighted synthesis accepted.\n[CONCLUDE] Drift magnitude: ${((math.systemic_uncertainty_index||0.05)*100).toFixed(1)}%\n[EMIT] Final interpretability lineage generated.`,
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+      className="col-span-full mt-1 bg-black/90 border border-white/10 p-5 relative">
+      <div className="flex items-center gap-3 mb-5 border-b border-white/8 pb-3">
+        <SearchCode size={12} className="text-slate-400"/>
+        <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-white">{agent.name} — Deep Inspection</span>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-        {/* Left Column: Raw Computational Traces */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-slate-400 border-b border-white/5 pb-2">
-            <Terminal size={12} />
-            <h4 className="font-mono text-[9px] uppercase tracking-widest">Computational Traces</h4>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Traces */}
+        <div>
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
+            <Terminal size={10} className="text-slate-500"/><span className="text-[8px] font-mono uppercase tracking-widest text-slate-500">Computational Traces</span>
           </div>
-          <div className="bg-white/5 p-3 border border-white/5 font-mono text-[9px] text-slate-300 leading-relaxed whitespace-pre-line">
-            <span className="text-holo-cyan">[{trace.title}]</span>
-            <br/><br/>
-            {trace.data}
-            <br/><br/>
-            <span className="text-slate-500">Entropy Array:</span> [0.82, 0.45, 0.91, 0.12]
-            <br/>
-            <span className="text-slate-500">Propagation:</span> {isHighDrift ? 'Non-linear' : 'Linear'}
+          <pre className="text-[8px] font-mono text-slate-300 bg-white/3 p-3 border border-white/5 whitespace-pre-wrap leading-relaxed">{traces[agent.id]}</pre>
+          <div className="mt-2 text-[7px] font-mono text-slate-600 space-y-1">
+            <div className="flex justify-between"><span>Entropy Array:</span><span className="text-slate-300">[0.82, 0.45, 0.91, 0.12]</span></div>
+            <div className="flex justify-between"><span>Propagation Mode:</span><span className="text-slate-300">{isHighDrift ? 'Non-linear' : 'Linear'}</span></div>
           </div>
         </div>
-
-        {/* Center Column: Interpretability Engine */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-slate-400 border-b border-white/5 pb-2">
-            <BrainCircuit size={12} />
-            <h4 className="font-mono text-[9px] uppercase tracking-widest">Interpretability Engine</h4>
+        {/* Interpretability */}
+        <div>
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
+            <BrainCircuit size={10} className="text-slate-500"/><span className="text-[8px] font-mono uppercase tracking-widest text-slate-500">Interpretability Engine</span>
           </div>
-          <div className="bg-white/5 p-3 border border-white/5 font-mono text-[9px] text-slate-300">
-            <div className="mb-4">
-              <span className="text-slate-500 uppercase tracking-widest block mb-2">Activated Theories</span>
-              <div className="text-white whitespace-pre-line border-l border-holo-cyan/30 pl-2">{interp.theories}</div>
-            </div>
+          <div className="bg-white/3 p-3 border border-white/5 space-y-3 text-[8px] font-mono">
             <div>
-              <span className="text-slate-500 uppercase tracking-widest block mb-2">Reasoning Chain</span>
-              <div className="text-slate-400 whitespace-pre-line">{interp.chains}</div>
+              <span className="text-slate-500 uppercase tracking-widest block mb-1">Theory Dominance</span>
+              <span className="text-white border-l border-white/20 pl-2 block">{agent.theoryDominance}</span>
+            </div>
+            <div className="border-t border-white/5 pt-2">
+              <span className="text-slate-500 uppercase tracking-widest block mb-1">Why It Matters</span>
+              <p className="text-slate-300 leading-relaxed">{agent.why}</p>
+            </div>
+            <div className="border-t border-white/5 pt-2">
+              <span className="text-slate-500 uppercase tracking-widest block mb-1">Contribution</span>
+              <p className="text-slate-400 leading-relaxed">{agent.contribution}</p>
             </div>
           </div>
         </div>
-
-        {/* Right Column: System Telemetry */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-slate-400 border-b border-white/5 pb-2">
-            <Network size={12} />
-            <h4 className="font-mono text-[9px] uppercase tracking-widest">System Telemetry</h4>
+        {/* Telemetry */}
+        <div>
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
+            <Network size={10} className="text-slate-500"/><span className="text-[8px] font-mono uppercase tracking-widest text-slate-500">System Telemetry</span>
           </div>
-          <div className="bg-white/5 p-3 border border-white/5 font-mono text-[9px] text-slate-400 space-y-2">
-            <div className="flex justify-between items-center">
-               <span>Memory Traffic</span>
-               <span className="text-white">{(Math.random() * 50 + 20).toFixed(1)} MB/s</span>
-            </div>
-            <div className="flex justify-between items-center">
-               <span>Orchestration Pressure</span>
-               <span className={isHighDrift ? 'text-rose-400' : 'text-emerald-400'}>{isHighDrift ? 'ELEVATED' : 'NOMINAL'}</span>
-            </div>
-            <div className="flex justify-between items-center">
-               <span>Packet Propagation</span>
-               <span className="text-white">{(Math.random() * 100 + 900).toFixed(0)} ms</span>
-            </div>
-            <div className="flex justify-between items-center border-t border-white/5 pt-2 mt-2">
-               <span>Theory Conflicts</span>
-               <span className={isHighDrift && agent.id >= 3 ? 'text-amber-500 animate-pulse' : 'text-slate-500'}>{isHighDrift && agent.id >= 3 ? 'DETECTED' : 'NONE'}</span>
-            </div>
-            
-            {/* Memory Visualization Array */}
-            <div className="mt-3 pt-2 border-t border-white/5">
-               <span className="text-slate-500 uppercase block mb-2 text-[8px]">Cached Semantic Vectors</span>
-               <div className="flex gap-[2px] flex-wrap">
-                  {[...Array(24)].map((_, i) => (
-                    <div key={i} className={`w-[2px] h-2 ${Math.random() > 0.8 ? (isHighDrift ? 'bg-rose-500' : 'bg-white') : 'bg-white/10'}`} />
-                  ))}
-               </div>
+          <div className="bg-white/3 p-3 border border-white/5 space-y-2 text-[8px] font-mono text-slate-500">
+            {[
+              ['Memory Traffic', `${(Math.random()*50+20).toFixed(1)} MB/s`],
+              ['Orch. Pressure', isHighDrift ? 'ELEVATED' : 'NOMINAL'],
+              ['Packet Prop.', `${(Math.random()*100+900).toFixed(0)} ms`],
+              ['Theory Conflicts', isHighDrift && agent.id >= 3 ? 'DETECTED' : 'NONE'],
+            ].map(([k,v]) => (
+              <div key={k} className="flex justify-between border-b border-white/3 pb-1">
+                <span>{k}</span>
+                <span className={v === 'ELEVATED' || v === 'DETECTED' ? 'text-amber-500' : 'text-slate-300'}>{v}</span>
+              </div>
+            ))}
+            <div className="pt-2">
+              <span className="text-slate-600 uppercase block mb-2 text-[7px]">Cached Semantic Vectors</span>
+              <div className="flex gap-[2px] flex-wrap">
+                {[...Array(28)].map((_, i) => (
+                  <div key={i} className={`w-[2px] h-2 ${Math.random() > 0.75 ? (isHighDrift ? 'bg-rose-500' : 'bg-white') : 'bg-white/8'}`}/>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
     </motion.div>
-  );
-}
-
-const AgentCard = ({ agent, results, index, isHighDrift, globalDrift, onConflict, isExpanded, onExpand, anyExpanded }) => {
-  const [internalState, setInternalState] = useState('waiting');
-  const [conflict, setConflict] = useState(false);
-  const [waitMsg, setWaitMsg] = useState("");
-
-  useEffect(() => {
-    if (results) {
-      let delay = index * (isHighDrift ? 600 : 1000);
-      setConflict(false);
-      
-      // Multi-Agent Dependency Wait States
-      if (agent.id === 4) {
-         setInternalState('sync_wait');
-         setWaitMsg("[WAIT] Awaiting semantic stabilization...");
-         delay += 800; 
-      } else if (agent.id === 5 && isHighDrift) {
-         setInternalState('locked');
-         setWaitMsg("[LOCK] Paused due to pragmatic conflict.");
-         delay += 1500;
-      } else {
-         setInternalState('waiting');
-      }
-      
-      const pTimer = setTimeout(() => {
-         setInternalState('processing');
-         setWaitMsg("");
-      }, delay);
-
-      const cTimer = setTimeout(() => {
-         if (isHighDrift && Math.random() > 0.6 && agent.id === 3) {
-            setInternalState('deadlock');
-            setConflict(true);
-            onConflict(`[AGENT-03] Semantic Tensor Conflict. Entropy bounds exceeded.`);
-            setTimeout(() => {
-               setInternalState('processing'); // Retry
-               onConflict(`[ORCHESTRATOR] Conflict reconciled. Ambiguity penalty applied.`);
-               setTimeout(() => {
-                  setInternalState('complete');
-                  setConflict(false);
-               }, 1500);
-            }, 2000);
-         } else {
-            setInternalState('complete');
-         }
-      }, delay + (isHighDrift ? 800 : 1500));
-
-      return () => { clearTimeout(pTimer); clearTimeout(cTimer); };
-    } else {
-      setInternalState('waiting');
-    }
-  }, [results, index, isHighDrift, agent.id, onConflict]);
-
-  const isComplete = internalState === 'complete';
-  const isProcessing = internalState === 'processing';
-  const isDeadlock = internalState === 'deadlock';
-  const isWait = internalState === 'sync_wait' || internalState === 'locked';
-
-  const pulseColor = 'border-white/20 text-white bg-white/5';
-  const activeColor = isDeadlock ? 'border-amber-500 text-amber-500 bg-amber-900/10' : 
-                      isProcessing ? 'border-white/50 text-white bg-white/5' : 
-                      isWait ? 'border-rose-500/30 text-rose-400 bg-rose-500/5' :
-                      isComplete ? pulseColor : 'border-white/5 bg-obsidian text-slate-500';
-
-  const dimOpacity = anyExpanded && !isExpanded ? 'opacity-30 grayscale hover:opacity-60 transition-all cursor-pointer' : 'opacity-100 cursor-pointer';
-  
-  const latency = isComplete ? (Math.random() * 0.4 + 0.1).toFixed(3) : "---";
-  const throughput = isComplete ? (Math.random() * 5 + 1).toFixed(1) : "---";
-  const confidence = isComplete ? (Math.random() * 20 + 80).toFixed(1) : 0;
-  
-  const stabilityZone = isDeadlock ? 'Conflict Detected' : isWait ? 'Dependency Lock' : isProcessing ? 'Volatile' : isComplete ? 'Stable' : 'Offline';
-  const stabilityColor = isDeadlock ? 'text-amber-500' : isWait ? 'text-rose-400' : isProcessing ? 'text-white' : isComplete ? 'text-slate-400' : 'text-slate-600';
-
-  // Confidence Collapse Animation
-  const collapseJitter = (isHighDrift && (isProcessing || isDeadlock)) ? { x: [0, -1, 1, -1, 0], y: [0, 1, -1, 1, 0] } : { x: 0, y: 0 };
-
-  return (
-    <div className={`relative group/agent ${dimOpacity}`} onClick={() => onExpand(isExpanded ? null : agent.id)}>
-      <motion.div 
-        animate={collapseJitter}
-        transition={{ duration: 0.2, repeat: Infinity, repeatType: "mirror" }}
-        className={`bg-black/80 p-4 flex flex-col items-center border ${activeColor} ${isExpanded ? 'border-b-transparent rounded-t-sm' : 'rounded-sm hover:border-white/30'} transition-colors duration-300 relative z-10 w-full min-h-[280px]`}
-      >
-         {/* Top Icons */}
-         <div className="absolute top-2 right-2 text-slate-600 flex gap-1">
-            {isDeadlock && <AlertTriangle size={10} className="text-amber-500 animate-pulse"/>}
-            {isWait && <Clock size={10} className="text-rose-400 animate-pulse"/>}
-            {internalState === 'waiting' && <Lock size={10} />}
-            {internalState !== 'waiting' && !isWait && <Unlock size={10} className={isComplete ? "text-slate-400" : "text-slate-600"} />}
-         </div>
-
-         {/* Icon & Name */}
-         <div className={`w-10 h-10 flex items-center justify-center mb-3 relative ${isComplete || isProcessing ? '' : 'grayscale opacity-30'}`}>
-            {isProcessing && <div className="absolute inset-0 border border-current opacity-30 animate-spin-slow rounded-sm"></div>}
-            {isDeadlock && <RefreshCcw className="absolute inset-0 animate-spin text-amber-500 opacity-50" />}
-            <div className="relative z-10">{agent.icon}</div>
-         </div>
-         <h4 className="font-mono text-[9px] tracking-widest uppercase mb-3 text-center h-8 flex items-center font-bold text-white shadow-black drop-shadow-md">{agent.name}</h4>
-         
-         {isWait && (
-            <div className="absolute inset-0 bg-black/80 z-20 flex items-center justify-center p-4 text-center border border-rose-500/30">
-               <span className="text-[8px] font-mono text-rose-400 uppercase tracking-widest">{waitMsg}</span>
-            </div>
-         )}
-
-         {/* Inference Stability Zone */}
-         <div className="w-full flex justify-between items-center text-[7px] font-mono tracking-widest uppercase mb-3 bg-white/5 p-1 border border-white/5">
-            <span className="text-slate-500">Zone</span>
-            <span className={stabilityColor}>{stabilityZone}</span>
-         </div>
-
-         {/* Runtime Metrics */}
-         <div className="w-full space-y-1 mb-4 text-[7px] font-mono uppercase tracking-widest">
-            <div className="flex justify-between text-slate-500">
-               <span>Latency</span>
-               <span className={isComplete ? 'text-white' : ''}>{latency}s</span>
-            </div>
-            <div className="flex justify-between text-slate-500">
-               <span>Throughput</span>
-               <span className={isComplete ? 'text-white' : ''}>{throughput}k/s</span>
-            </div>
-            <div className="flex justify-between text-slate-500">
-               <span>Confidence</span>
-               <span className={isComplete && confidence < 85 ? 'text-amber-400' : isComplete ? 'text-white' : ''}>{confidence}%</span>
-            </div>
-         </div>
-
-         {/* Semantic Load Pressure */}
-         <div className="w-full mt-auto mb-2">
-             <div className="flex justify-between text-[7px] font-mono uppercase text-slate-500 mb-1">
-                 <span>Semantic Load</span>
-                 <span>{isComplete ? '72%' : '0%'}</span>
-             </div>
-             <div className="w-full h-[2px] bg-white/10 overflow-hidden">
-                 <div className={`h-full ${isHighDrift ? 'bg-rose-500' : 'bg-white'} transition-all duration-1000`} style={{ width: isComplete ? '72%' : (isProcessing ? '40%' : '0%') }} />
-             </div>
-         </div>
-
-         <div className="absolute bottom-[-8px] bg-black border border-white/10 rounded-sm px-2 py-1 opacity-0 group-hover/agent:opacity-100 transition-opacity z-20">
-            <ChevronDown size={10} className={isExpanded ? "rotate-180 transition-transform text-white" : "transition-transform text-slate-400"} />
-         </div>
-      </motion.div>
-
-      {/* Dependency Link */}
-      {agent.id < 5 && <MemoryTransferBeam active={isProcessing || isComplete || isDeadlock} isWaitState={isWait} isHighDrift={isHighDrift} hasConflict={conflict} />}
-    </div>
   );
 };
 
@@ -299,150 +308,110 @@ const AgentPipeline = ({ results }) => {
   const { resonanceState } = useResonance();
   const [conflictLog, setConflictLog] = useState(null);
   const [expandedAgentId, setExpandedAgentId] = useState(null);
-  
   const plan = results?.execution_plan;
   const isHighDrift = resonanceState.intensityMultiplier > 1.5;
 
-  const agents = [
-    { id: 1, name: "Preprocessor", icon: <Database size={16} />, active: true },
-    { id: 2, name: "Pragmatics", icon: <BrainCircuit size={16} />, active: plan ? plan.run_pragmatics : true },
-    { id: 3, name: "Semantics", icon: <ScanText size={16} />, active: plan ? plan.run_semantics : true },
-    { id: 4, name: "Register", icon: <Scale size={16} />, active: plan ? plan.run_register : true },
-    { id: 5, name: "Orchestrator", icon: <Cpu size={16} />, active: true },
-  ];
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative border border-white/5 bg-black/40 mt-12">
-      <div className="absolute top-0 left-0 w-[2px] h-full bg-gradient-to-b from-white/20 via-rose-500/20 to-white/20 opacity-50"></div>
-      
-      <div className="mb-10 flex flex-col items-start">
-         <div className="flex items-center gap-3 mb-2">
-            <Activity size={12} className="text-slate-500"/>
-            <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-slate-500">Distributed Explainable AI Semantic Cognition Network</span>
-         </div>
-         <h2 className="text-xl font-mono text-white tracking-[0.1em] uppercase">Inference Module Network</h2>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative border border-white/5 bg-black/40 mt-12">
+      <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-white/15 via-white/5 to-white/15" />
+
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-1">
+          <Activity size={10} className="text-slate-600"/>
+          <span className="font-mono text-[8px] tracking-[0.2em] uppercase text-slate-600">Distributed Explainable AI Semantic Cognition Network</span>
+        </div>
+        <h2 className="text-lg font-mono text-white tracking-[0.1em] uppercase">Inference Module Network</h2>
       </div>
 
       {plan && (
-        <motion.div 
-           initial={{ opacity: 0 }}
-           animate={{ opacity: 1 }}
-           className={`max-w-full mb-12 bg-black/80 border border-white/10 p-5 relative shadow-xl`}
-        >
-          <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-3 relative z-10">
-            <div className="flex items-center space-x-3">
-               <Layers className="text-slate-400" size={14} />
-               <span className="text-[10px] font-mono tracking-widest uppercase text-white">Computational Timeline & Profiler</span>
+        <div className="mb-10 bg-black/70 border border-white/8 p-4 relative">
+          <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+            <div className="flex items-center gap-2">
+              <Layers size={12} className="text-slate-500"/>
+              <span className="text-[9px] font-mono uppercase tracking-widest text-white">Computational Timeline & Profiler</span>
             </div>
-            {results?.runtime_seconds && <span className="text-[9px] font-mono text-slate-400 uppercase border border-white/10 px-2 py-1 bg-white/5"><CheckCircle2 size={10} className="inline mr-1" /> Sync Latency: {results.runtime_seconds}s</span>}
+            {results?.runtime_seconds && <span className="text-[8px] font-mono text-slate-500 border border-white/8 px-2 py-1">Sync: {results.runtime_seconds}s</span>}
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm relative z-10 mb-6 border-b border-white/5 pb-5">
-            <div className="flex flex-col gap-2">
-               <span className="text-slate-500 font-mono text-[8px] tracking-widest uppercase flex items-center gap-1"><Terminal size={10}/> Input Complexity</span>
-               <div className="bg-white/5 p-2 border border-white/5 text-[8px] font-mono text-slate-400 space-y-1">
-                 <div className="flex justify-between"><span>Lexical Density:</span><span className="text-white">High</span></div>
-                 <div className="flex justify-between"><span>Semantic Volatility:</span><span className={isHighDrift ? 'text-rose-400' : 'text-slate-300'}>{isHighDrift ? '0.84 (ELEVATED)' : '0.21 (NOMINAL)'}</span></div>
-               </div>
-            </div>
-            <div className="flex flex-col gap-2">
-               <span className="text-slate-500 font-mono text-[8px] tracking-widest uppercase flex items-center gap-1"><Server size={10}/> Target Domain</span>
-               <span className="text-slate-300 font-mono text-[9px] bg-white/5 p-2 border border-white/5 h-full flex items-center">{plan.domain}</span>
-            </div>
-            <div className="flex flex-col gap-2">
-               <span className="text-slate-500 font-mono text-[8px] tracking-widest uppercase flex items-center gap-1"><ActivitySquare size={10}/> Intent Hypothesis</span>
-               <span className="text-slate-300 font-mono text-[9px] bg-white/5 p-2 border border-white/5 h-full flex items-center">{plan.communicative_intent}</span>
-            </div>
-            <div className="flex flex-col gap-2">
-               <span className="text-slate-500 font-mono text-[8px] tracking-widest uppercase flex items-center gap-1"><Network size={10}/> Orchestration Decisions</span>
-               <span className="text-slate-300 font-mono text-[9px] bg-white/5 p-2 border border-white/5 h-full flex items-center leading-relaxed" title={plan.routing_rationale}>
-                 {plan.routing_rationale}
-               </span>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5 text-[8px] font-mono">
+            {[
+              ['Input Complexity', isHighDrift ? 'High Volatility' : 'Nominal'],
+              ['Target Domain', plan.domain || 'Academic'],
+              ['Intent Hypothesis', plan.communicative_intent || 'Persuasion'],
+              ['Orchestration', plan.routing_rationale?.slice(0,60)+'...' || 'Standard routing'],
+            ].map(([k,v]) => (
+              <div key={k} className="flex flex-col gap-1">
+                <span className="text-slate-600 uppercase tracking-widest">{k}</span>
+                <span className="text-slate-200 bg-white/3 p-2 border border-white/5">{v}</span>
+              </div>
+            ))}
           </div>
-
-          <div className="relative z-10 w-full pt-2">
-             <span className="text-slate-500 font-mono text-[8px] tracking-widest uppercase block mb-4">Live Execution Rail</span>
-             <div className="flex items-center w-full justify-between relative">
-                <div className="absolute left-0 w-full h-[1px] bg-white/10 z-0 top-1/2 -translate-y-1/2"></div>
-                {[
-                  { time: '00.012s', stage: 'Normalization' },
-                  { time: '00.842s', stage: 'Pragmatic Map' },
-                  { time: '01.931s', stage: isHighDrift ? 'Drift Detected' : 'Semantic Parse' },
-                  { time: '02.441s', stage: 'Register Sync' },
-                  { time: '03.102s', stage: 'Arbitration' }
-                ].map((s, i) => (
-                  <div key={i} className="relative z-10 flex flex-col items-center gap-2">
-                     <div className={`w-[3px] h-[3px] rounded-full ${isHighDrift && i >= 2 ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]' : 'bg-white shadow-[0_0_8px_#fff]'}`}></div>
-                     <span className="text-[7px] font-mono text-slate-400 bg-black px-1">[{s.time}]</span>
-                     <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest whitespace-nowrap absolute top-5">{s.stage}</span>
-                  </div>
-                ))}
-             </div>
-             <div className="h-8"></div>
+          {/* Execution Rail */}
+          <div className="relative pt-2">
+            <span className="text-[7px] font-mono text-slate-600 uppercase tracking-widest block mb-4">Live Execution Rail</span>
+            <div className="flex items-center justify-between relative">
+              <div className="absolute left-0 w-full h-[1px] bg-white/8 top-1/2 -translate-y-1/2"/>
+              {[['00.012s','Normalization'],['00.842s','Pragmatic Map'],[isHighDrift?'01.2s':'01.9s',isHighDrift?'Drift Detected':'Semantic Parse'],['02.4s','Register Sync'],['03.1s','Arbitration']].map(([t,s],i)=>(
+                <div key={i} className="relative z-10 flex flex-col items-center gap-2">
+                  <div className={`w-[3px] h-[3px] rounded-full ${isHighDrift&&i>=2?'bg-rose-500':'bg-white'}`}/>
+                  <span className="text-[7px] font-mono text-slate-500 bg-black px-1">[{t}]</span>
+                  <span className="absolute top-5 text-[7px] font-mono text-slate-600 uppercase whitespace-nowrap">{s}</span>
+                </div>
+              ))}
+            </div>
+            <div className="h-8"/>
           </div>
-          
           <AnimatePresence>
-             {conflictLog && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-4 pt-4 border-t border-rose-500/20 text-[9px] font-mono text-amber-500 tracking-widest uppercase flex items-center gap-2">
-                   <ShieldAlert size={10} className="animate-pulse" /> {conflictLog}
-                </motion.div>
-             )}
+            {conflictLog && (
+              <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
+                className="mt-3 pt-3 border-t border-rose-500/20 text-[8px] font-mono text-amber-500 tracking-widest uppercase flex items-center gap-2">
+                <ShieldAlert size={10} className="animate-pulse"/>{conflictLog}
+              </motion.div>
+            )}
           </AnimatePresence>
-        </motion.div>
+        </div>
       )}
 
-      <div className="relative w-full overflow-visible mb-10">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 relative z-10">
-          {agents.map((agent, i) => (
-            <AgentCard 
-               key={agent.id} 
-               agent={agent} 
-               results={results} 
-               index={i} 
-               isHighDrift={isHighDrift} 
-               globalDrift={resonanceState.driftMagnitude} 
-               onConflict={setConflictLog} 
-               isExpanded={expandedAgentId === agent.id}
-               onExpand={setExpandedAgentId}
-               anyExpanded={expandedAgentId !== null}
-            />
-          ))}
-        </div>
-        
+      {/* Agent Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 relative z-10">
+        {AGENT_DEFS.map((agent, i) => (
+          <AgentCard key={agent.id} agent={agent} results={results} index={i}
+            isHighDrift={isHighDrift} onExpand={setExpandedAgentId}
+            isExpanded={expandedAgentId === agent.id}
+            anyExpanded={expandedAgentId !== null}
+          />
+        ))}
         <AnimatePresence>
-           {expandedAgentId && (
-              <AgentInspectionDrawer 
-                key="drawer"
-                agent={agents.find(a => a.id === expandedAgentId)} 
-                results={results} 
-                isHighDrift={isHighDrift} 
-              />
-           )}
+          {expandedAgentId && (
+            <InspectionDrawer
+              key="drawer"
+              agent={AGENT_DEFS.find(a => a.id === expandedAgentId)}
+              results={results}
+              isHighDrift={isHighDrift}
+            />
+          )}
         </AnimatePresence>
       </div>
 
-      <div className="border-l-2 border-white/20 pl-4 py-2 mt-8 bg-gradient-to-r from-white/5 to-transparent">
-         <h4 className="font-mono text-[9px] text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-           <Terminal size={10}/> Theory Arbitration Logs
-         </h4>
-         <div className="font-mono text-[9px] text-slate-500 space-y-1">
-           <p>[ARBITRATION] Initialization sequence complete.</p>
-           {isHighDrift ? (
-             <>
-                <p className="text-amber-500/80">[ARBITRATION] Pragmatics → coercive interpretation detected.</p>
-                <p className="text-amber-500/80">[ARBITRATION] Semantics → lexical mutation bounds exceeded.</p>
-                <p className="text-rose-400">[ARBITRATION] Register → institutional override triggered.</p>
-                <p className="text-white">[RESOLUTION] Weighted synthesis accepted. Confidence delta → +0.08</p>
-             </>
-           ) : (
-             <>
-                <p>[ARBITRATION] Pragmatics → nominal intent mapping.</p>
-                <p>[ARBITRATION] Register → institutional alignment confirmed.</p>
-                <p className="text-slate-400">[RESOLUTION] Linear consensus reached. Confidence delta → +0.02</p>
-             </>
-           )}
-         </div>
+      {/* Theory Arbitration Log */}
+      <div className="border-l border-white/10 pl-4 py-2 mt-8">
+        <h4 className="font-mono text-[8px] text-slate-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Terminal size={10}/>Theory Arbitration Logs</h4>
+        <div className="font-mono text-[8px] text-slate-600 space-y-[3px]">
+          <p>[ARBITRATION] Initialization sequence complete.</p>
+          {isHighDrift ? (
+            <>
+              <p className="text-amber-500/80">[ARBITRATION] Pragmatics → coercive escalation detected.</p>
+              <p className="text-amber-500/80">[ARBITRATION] Semantics → lexical mutation bounds exceeded.</p>
+              <p className="text-rose-400/80">[ARBITRATION] Register → institutional override triggered.</p>
+              <p className="text-slate-300">[RESOLUTION] Weighted synthesis accepted. Confidence delta → +0.08</p>
+            </>
+          ) : (
+            <>
+              <p>[ARBITRATION] Pragmatics → nominal intent mapping.</p>
+              <p>[ARBITRATION] Register → institutional alignment confirmed.</p>
+              <p className="text-slate-400">[RESOLUTION] Linear consensus reached. Confidence delta → +0.02</p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
